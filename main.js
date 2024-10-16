@@ -2,8 +2,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 let scene, camera, renderer, player, floor;
-let speed = 0.1;
-const playerSpeed = 0.2;
+let speed = 0.2;
+const playerSpeed = 0.3;
 let movingLeft = false,
   movingRight = false,
   movingUp = false,
@@ -19,14 +19,6 @@ function init() {
   const axesHelper = new THREE.AxesHelper(10);
   scene.add(axesHelper);
 
-  // Camera
-  camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-  );
-  camera.position.set(0, 0, 10);
 
   // Renderer
   renderer = new THREE.WebGLRenderer();
@@ -40,6 +32,16 @@ function init() {
   player.position.set(0, 0, 0);
   player.rotation.x = Math.PI;
   scene.add(player);
+
+
+  // Camera
+  camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  );
+  camera.position.set(0, 0, 10);
 
   // Floor
   const floorGeometry = new THREE.CylinderGeometry(7, 7, 200, 32, 1, true);
@@ -108,7 +110,7 @@ function updatePlayerMovement() {
 
   // Clamp player position within the cylinder
   const distanceFromCenter = Math.sqrt(player.position.x ** 2 + player.position.y ** 2);
-  const maxRadius = 7; // Radius of the cylinder
+  const maxRadius = 6.5; // Radius of the cylinder
   if (distanceFromCenter > maxRadius) {
     const angle = Math.atan2(player.position.y, player.position.x);
     player.position.x = maxRadius * Math.cos(angle);
@@ -128,19 +130,32 @@ function spawnCube() {
   const radius = minRadius + Math.random() * (maxRadius - minRadius); // Random radius within the range
   const height = -50; // Spawn at the beginning of the tube
 
+  cube.rotation.z = Math.random() * Math.PI;
   cube.position.set(radius * Math.sin(angle), radius * Math.cos(angle), height);
-
+  const isLinear = Math.random() > 0.3;
+  cube.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+  cube.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
   scene.add(cube);
-
-   cubes.push(cube);
+  cubes.push(cube);
 }
 
 function updateCubes() {
   cubes.forEach((cube) => {
+    cube.position.x += cube.userData.x;
+    cube.position.y += cube.userData.y;
     cube.position.z += speed;
+
     if (cube.position.z > 50) {
       scene.remove(cube);
       cubes = cubes.filter((c) => c !== cube);
+    }
+
+    // Invert userData values if cube goes out of bounds
+    const distanceFromCenter = Math.sqrt(cube.position.x ** 2 + cube.position.y ** 2);
+    const maxRadius = 7; // Radius of the cylinder
+    if (distanceFromCenter > maxRadius) {
+      cube.userData.x = -cube.userData.x;
+      cube.userData.y = -cube.userData.y;
     }
   });
 }
@@ -203,6 +218,11 @@ function animate() {
 
   // Check for collisions
   checkCollisions();
+
+  // camera.position.x = player.position.x;
+  // camera.position.y = player.position.y;
+  // camera.position.z = player.position.z + 10;
+
 
   renderer.render(scene, camera);
 }
