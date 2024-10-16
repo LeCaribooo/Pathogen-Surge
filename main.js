@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import {ambiantSoundPlay} from "./sound.js";
 
 let scene, camera, renderer, player, floor;
 let speed = 0.2;
@@ -18,7 +19,6 @@ function init() {
 
   const axesHelper = new THREE.AxesHelper(10);
   scene.add(axesHelper);
-
 
   // Renderer
   renderer = new THREE.WebGLRenderer();
@@ -42,6 +42,7 @@ function init() {
     1000
   );
   camera.position.set(0, 0, 10);
+  ambiantSoundPlay(camera);
 
   // Floor
   const floorGeometry = new THREE.CylinderGeometry(7, 7, 200, 32, 1, true);
@@ -174,6 +175,7 @@ function checkCollisions() {
   cubes.forEach((cube) => {
     const cubeBox = new THREE.Box3().setFromObject(cube);
     if (!hasCollided && playerBox.intersectsBox(cubeBox)) {
+      //TODO: sound pas cool
       hasCollided = true;
       player.material.color.set(white);
       setTimeout(() => {
