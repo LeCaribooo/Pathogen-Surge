@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Text } from "troika-three-text";
 
 let scene, camera, renderer, player, floor;
 let speed = 0.2;
@@ -9,6 +10,12 @@ let movingLeft = false,
   movingUp = false,
   movingDown = false;
 let cubes = [];
+let lives = 3;
+let livesText;
+let hasCollided = false;
+
+const white = 0x88ff88;
+const green = 0x00ff00;
 
 init();
 animate();
@@ -16,9 +23,15 @@ animate();
 function init() {
   scene = new THREE.Scene();
 
+  livesText = new Text();
+  livesText.text = "Lives: 3";
+  livesText.color = 0xffffff;
+  livesText.fontSize = 1;
+
+  scene.add(livesText);
+
   const axesHelper = new THREE.AxesHelper(10);
   scene.add(axesHelper);
-
 
   // Renderer
   renderer = new THREE.WebGLRenderer();
@@ -33,6 +46,7 @@ function init() {
   player.rotation.x = Math.PI;
   scene.add(player);
 
+  console.log(300 / 100);
 
   // Camera
   camera = new THREE.PerspectiveCamera(
@@ -42,7 +56,7 @@ function init() {
     1000
   );
   camera.position.set(0, 0, 10);
-
+  livesText.position.set(-5, 5, 0);
   // Floor
   const floorGeometry = new THREE.CylinderGeometry(7, 7, 200, 32, 1, true);
   const floorMaterial = new THREE.MeshBasicMaterial({
@@ -109,7 +123,9 @@ function updatePlayerMovement() {
   }
 
   // Clamp player position within the cylinder
-  const distanceFromCenter = Math.sqrt(player.position.x ** 2 + player.position.y ** 2);
+  const distanceFromCenter = Math.sqrt(
+    player.position.x ** 2 + player.position.y ** 2
+  );
   const maxRadius = 6.5; // Radius of the cylinder
   if (distanceFromCenter > maxRadius) {
     const angle = Math.atan2(player.position.y, player.position.x);
@@ -119,7 +135,7 @@ function updatePlayerMovement() {
 }
 
 function spawnCube() {
-  const cubeGeometry = new THREE.CylinderGeometry (1, 1, 1);
+  const cubeGeometry = new THREE.CylinderGeometry(1, 1, 1);
   const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
@@ -151,7 +167,9 @@ function updateCubes() {
     }
 
     // Invert userData values if cube goes out of bounds
-    const distanceFromCenter = Math.sqrt(cube.position.x ** 2 + cube.position.y ** 2);
+    const distanceFromCenter = Math.sqrt(
+      cube.position.x ** 2 + cube.position.y ** 2
+    );
     const maxRadius = 7; // Radius of the cylinder
     if (distanceFromCenter > maxRadius) {
       cube.userData.x = -cube.userData.x;
@@ -162,11 +180,6 @@ function updateCubes() {
 
 // Spawn a cube every 0.5 seconds
 setInterval(spawnCube, 500);
-let hasCollided = false;
-let lives = 3;
-const livesElement = document.getElementById("lives");
-const white = 0x88ff88;
-const green = 0x00ff00;
 
 function checkCollisions() {
   const playerBox = new THREE.Box3().setFromObject(player);
@@ -175,6 +188,8 @@ function checkCollisions() {
     const cubeBox = new THREE.Box3().setFromObject(cube);
     if (!hasCollided && playerBox.intersectsBox(cubeBox)) {
       hasCollided = true;
+      lives--;
+      livesText.text = `Lives: ${lives}`;
       player.material.color.set(white);
       setTimeout(() => {
         player.material.color.set(green);
@@ -188,15 +203,17 @@ function checkCollisions() {
       setTimeout(() => {
         player.material.color.set(white);
       }, 400);
-
       setTimeout(() => {
         player.material.color.set(green);
         hasCollided = false;
       }, 500);
-      lives--;
-      livesElement.innerText = `Lives: ${lives}`;
 
-      console.log("Collision detected!");
+      if (lives === 0) {
+        alert("Game over!");
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
     }
   });
 }
@@ -222,7 +239,7 @@ function animate() {
   // camera.position.x = player.position.x;
   // camera.position.y = player.position.y;
   // camera.position.z = player.position.z + 10;
-
+  // Make the text face the camera
 
   renderer.render(scene, camera);
 }
