@@ -5,3 +5,7 @@ body {
 canvas {
   display: block;
 }
+
+#lives {
+  position: absolute;
+}

@@ -1,10 +1,13 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
 let scene, camera, renderer, player, floor;
 let speed = 0.1;
 const playerSpeed = 0.2;
 let movingLeft = false,
-  movingRight = false;
+  movingRight = false,
+  movingUp = false,
+  movingDown = false;
 let cubes = [];
 
 init();
@@ -31,7 +34,7 @@ function init() {
   document.body.appendChild(renderer.domElement);
 
   // Player
-  const playerGeometry = new THREE.ConeGeometry(1, 4, 32);
+  const playerGeometry = new THREE.SphereGeometry(0.5, 32, 32);
   const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
   player = new THREE.Mesh(playerGeometry, playerMaterial);
   player.position.set(0, 0, 0);
@@ -78,33 +81,43 @@ function onWindowResize() {
 function onKeyDown(event) {
   if (event.key === "ArrowLeft") movingLeft = true;
   if (event.key === "ArrowRight") movingRight = true;
+  if (event.key === "ArrowUp") movingUp = true;
+  if (event.key === "ArrowDown") movingDown = true;
 }
 
 function onKeyUp(event) {
   if (event.key === "ArrowLeft") movingLeft = false;
   if (event.key === "ArrowRight") movingRight = false;
+  if (event.key === "ArrowUp") movingUp = false;
+  if (event.key === "ArrowDown") movingDown = false;
 }
 
 function updatePlayerMovement() {
-  const radius = 5; // Radius of the cylinder
-  const angleSpeed = playerSpeed / radius; // Convert linear speed to angular speed
-
   if (movingLeft) {
-    // player.rotation.y += angleSpeed;
-    player.rotation.z += angleSpeed;
+    player.position.x -= playerSpeed;
   }
   if (movingRight) {
-    //player.rotation.y -= angleSpeed;
-    player.rotation.z -= angleSpeed;
+    player.position.x += playerSpeed;
+  }
+  if (movingUp) {
+    player.position.y += playerSpeed;
+  }
+  if (movingDown) {
+    player.position.y -= playerSpeed;
   }
 
-  // Update player position based on the new angle
-  player.position.x = radius * Math.sin(player.rotation.z);
-  player.position.y = radius * Math.cos(player.rotation.z);
+  // Clamp player position within the cylinder
+  const distanceFromCenter = Math.sqrt(player.position.x ** 2 + player.position.y ** 2);
+  const maxRadius = 7; // Radius of the cylinder
+  if (distanceFromCenter > maxRadius) {
+    const angle = Math.atan2(player.position.y, player.position.x);
+    player.position.x = maxRadius * Math.cos(angle);
+    player.position.y = maxRadius * Math.sin(angle);
+  }
 }
 
 function spawnCube() {
-  const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+  const cubeGeometry = new THREE.CylinderGeometry (1, 1, 1);
   const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
@@ -118,7 +131,8 @@ function spawnCube() {
   cube.position.set(radius * Math.sin(angle), radius * Math.cos(angle), height);
 
   scene.add(cube);
-  cubes.push(cube);
+
+   cubes.push(cube);
 }
 
 function updateCubes() {
@@ -133,6 +147,44 @@ function updateCubes() {
 
 // Spawn a cube every 0.5 seconds
 setInterval(spawnCube, 500);
+let hasCollided = false;
+let lives = 3;
+const livesElement = document.getElementById("lives");
+const white = 0x88ff88;
+const green = 0x00ff00;
+
+function checkCollisions() {
+  const playerBox = new THREE.Box3().setFromObject(player);
+
+  cubes.forEach((cube) => {
+    const cubeBox = new THREE.Box3().setFromObject(cube);
+    if (!hasCollided && playerBox.intersectsBox(cubeBox)) {
+      hasCollided = true;
+      player.material.color.set(white);
+      setTimeout(() => {
+        player.material.color.set(green);
+      }, 100);
+      setTimeout(() => {
+        player.material.color.set(white);
+      }, 200);
+      setTimeout(() => {
+        player.material.color.set(green);
+      }, 300);
+      setTimeout(() => {
+        player.material.color.set(white);
+      }, 400);
+
+      setTimeout(() => {
+        player.material.color.set(green);
+        hasCollided = false;
+      }, 500);
+      lives--;
+      livesElement.innerText = `Lives: ${lives}`;
+
+      console.log("Collision detected!");
+    }
+  });
+}
 
 function animate() {
   requestAnimationFrame(animate);
@@ -150,7 +202,7 @@ function animate() {
   updateCubes();
 
   // Check for collisions
-  // checkCollisions();
+  checkCollisions();
 
   renderer.render(scene, camera);
 }
