@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import {ambiantSoundPlay} from "./sound.js";
+import { Text } from "troika-three-text";
+import { ambiantSoundPlay } from "./sound.js";
 
 let scene, camera, renderer, player, floor;
 let speed = 0.2;
@@ -10,6 +11,12 @@ let movingLeft = false,
   movingUp = false,
   movingDown = false;
 let cubes = [];
+let lives = 3;
+let livesText;
+let hasCollided = false;
+
+const white = 0x99ff99;
+const green = 0x00ff00;
 
 init();
 animate();
@@ -19,6 +26,12 @@ function init() {
 
   const axesHelper = new THREE.AxesHelper(10);
   scene.add(axesHelper);
+  livesText = new Text();
+  livesText.text = "Lives: 3";
+  livesText.color = 0xffffff;
+  livesText.fontSize = 1;
+
+  scene.add(livesText);
 
   // Renderer
   renderer = new THREE.WebGLRenderer();
@@ -33,7 +46,6 @@ function init() {
   player.rotation.x = Math.PI;
   scene.add(player);
 
-
   // Camera
   camera = new THREE.PerspectiveCamera(
     75,
@@ -42,6 +54,7 @@ function init() {
     1000
   );
   camera.position.set(0, 0, 10);
+  livesText.position.set(-5, 5, 0);
   ambiantSoundPlay(camera);
 
   // Floor
@@ -63,7 +76,8 @@ function init() {
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableKeys = false;
   controls.enablePan = false;
-  // controls.enableZoom = false;
+  controls.enableZoom = false;
+  controls.enableRotate = false;
 
   // Resize handler
   window.addEventListener("resize", onWindowResize);
@@ -110,7 +124,9 @@ function updatePlayerMovement() {
   }
 
   // Clamp player position within the cylinder
-  const distanceFromCenter = Math.sqrt(player.position.x ** 2 + player.position.y ** 2);
+  const distanceFromCenter = Math.sqrt(
+    player.position.x ** 2 + player.position.y ** 2
+  );
   const maxRadius = 6.5; // Radius of the cylinder
   if (distanceFromCenter > maxRadius) {
     const angle = Math.atan2(player.position.y, player.position.x);
@@ -120,7 +136,7 @@ function updatePlayerMovement() {
 }
 
 function spawnCube() {
-  const cubeGeometry = new THREE.CylinderGeometry (1, 1, 1);
+  const cubeGeometry = new THREE.CylinderGeometry(1, 1, 1);
   const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
@@ -152,7 +168,9 @@ function updateCubes() {
     }
 
     // Invert userData values if cube goes out of bounds
-    const distanceFromCenter = Math.sqrt(cube.position.x ** 2 + cube.position.y ** 2);
+    const distanceFromCenter = Math.sqrt(
+      cube.position.x ** 2 + cube.position.y ** 2
+    );
     const maxRadius = 7; // Radius of the cylinder
     if (distanceFromCenter > maxRadius) {
       cube.userData.x = -cube.userData.x;
@@ -163,11 +181,6 @@ function updateCubes() {
 
 // Spawn a cube every 0.5 seconds
 setInterval(spawnCube, 500);
-let hasCollided = false;
-let lives = 3;
-const livesElement = document.getElementById("lives");
-const white = 0x88ff88;
-const green = 0x00ff00;
 
 function checkCollisions() {
   const playerBox = new THREE.Box3().setFromObject(player);
@@ -177,6 +190,8 @@ function checkCollisions() {
     if (!hasCollided && playerBox.intersectsBox(cubeBox)) {
       //TODO: sound pas cool
       hasCollided = true;
+      lives--;
+      livesText.text = `Lives: ${lives}`;
       player.material.color.set(white);
       setTimeout(() => {
         player.material.color.set(green);
@@ -190,15 +205,15 @@ function checkCollisions() {
       setTimeout(() => {
         player.material.color.set(white);
       }, 400);
-
       setTimeout(() => {
         player.material.color.set(green);
         hasCollided = false;
       }, 500);
-      lives--;
-      livesElement.innerText = `Lives: ${lives}`;
 
-      console.log("Collision detected!");
+      // if (lives === 0) {
+      //   alert("Game over!");
+      //   window.location.reload();
+      // }
     }
   });
 }
@@ -220,11 +235,6 @@ function animate() {
 
   // Check for collisions
   checkCollisions();
-
-  // camera.position.x = player.position.x;
-  // camera.position.y = player.position.y;
-  // camera.position.z = player.position.z + 10;
-
 
   renderer.render(scene, camera);
 }
