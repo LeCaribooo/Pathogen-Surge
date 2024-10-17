@@ -14,7 +14,7 @@ let lives = 3;
 let livesText;
 let hasCollided = false;
 
-const white = 0x88ff88;
+const white = 0x99ff99;
 const green = 0x00ff00;
 
 init();
@@ -30,9 +30,6 @@ function init() {
 
   scene.add(livesText);
 
-  const axesHelper = new THREE.AxesHelper(10);
-  scene.add(axesHelper);
-
   // Renderer
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -45,8 +42,6 @@ function init() {
   player.position.set(0, 0, 0);
   player.rotation.x = Math.PI;
   scene.add(player);
-
-  console.log(300 / 100);
 
   // Camera
   camera = new THREE.PerspectiveCamera(
@@ -76,7 +71,8 @@ function init() {
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableKeys = false;
   controls.enablePan = false;
-  // controls.enableZoom = false;
+  controls.enableZoom = false;
+  controls.enableRotate = false;
 
   // Resize handler
   window.addEventListener("resize", onWindowResize);
@@ -208,12 +204,10 @@ function checkCollisions() {
         hasCollided = false;
       }, 500);
 
-      if (lives === 0) {
-        alert("Game over!");
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      }
+      // if (lives === 0) {
+      //   alert("Game over!");
+      //   window.location.reload();
+      // }
     }
   });
 }
@@ -235,11 +229,6 @@ function animate() {
 
   // Check for collisions
   checkCollisions();
-
-  // camera.position.x = player.position.x;
-  // camera.position.y = player.position.y;
-  // camera.position.z = player.position.z + 10;
-  // Make the text face the camera
 
   renderer.render(scene, camera);
 }
