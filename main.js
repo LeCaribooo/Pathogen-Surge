@@ -237,6 +237,9 @@ function updateCubes() {
     cube.position.x += cube.userData.x;
     cube.position.y += cube.userData.y;
     cube.position.z += speed;
+    cube.rotation.x += Math.random() * 0.02
+    cube.rotation.y += Math.random() * 0.02
+    cube.rotation.z += Math.random() * 0.02
 
     if (cube.position.z > 50) {
       scene.remove(cube);
