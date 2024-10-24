@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Text } from "troika-three-text";
-import { ambiantSoundPlay } from "./sound.js";
+import { ambiantSoundPlay, destroySound } from "./sound.js";
 
 let scene, camera, renderer, player, floor, vessel;
 let speed = 0.2;
@@ -342,11 +342,11 @@ function checkCollisions() {
     cubes.forEach((cube) => {
       const cubeBox = new THREE.Box3().setFromObject(cube);
       if (!hasCollided && playerBox.intersectsBox(cubeBox)) {
-        //TODO: sound pas cool
         hasCollided = true;
         lives--;
         livesText.text = `Lives: ${lives}`;
         destroyObject(cube)
+        destroySound(camera)
         hasCollided = false;
 
         // if (lives === 0) {
