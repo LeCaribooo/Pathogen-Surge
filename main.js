@@ -6,7 +6,7 @@ import { ambiantSoundPlay } from "./sound.js";
 
 let scene, camera, renderer, player, floor;
 let speed = 0.2;
-const playerSpeed = 0.3;
+const playerSpeed = 0.15;
 let movingLeft = false,
   movingRight = false,
   movingUp = false,
@@ -20,7 +20,9 @@ const white = 0x99ff99;
 const green = 0x00ff00;
 
 init();
+console.log(player)
 animate();
+
 
 function init() {
   scene = new THREE.Scene();
@@ -40,12 +42,38 @@ function init() {
   document.body.appendChild(renderer.domElement);
 
   // Player
-  const playerGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+  //const loader = new GLTFLoader();
+  // Using the Promise to load the model
+  loadModel('Pathogen-Surge/assets/models/virus.glb').then((playerModel) => {
+  player = playerModel;
+  
+
+  // Traverse the model to apply shadows
+  player.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+
+  player.position.set(0, 0, 0);
+  player.scale.set(0.5, 0.5, 0.5);
+  player.rotation.y = Math.PI * 3 / 2;
+
+  scene.add(player);
+  console.log(player)
+
+  // Now you can use the player model in the scene
+  }).catch((error) => {
+    console.error('An error occurred while loading the model', error);
+  });
+
+  /*const playerGeometry = new THREE.SphereGeometry(0.5, 32, 32);
   const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
   player = new THREE.Mesh(playerGeometry, playerMaterial);
   player.position.set(0, 0, 0);
   player.rotation.x = Math.PI;
-  scene.add(player);
+  scene.add(player);*/
 
   // Camera
   camera = new THREE.PerspectiveCamera(
@@ -88,6 +116,17 @@ function init() {
   document.addEventListener("keyup", onKeyUp);
 }
 
+function loadModel(url) {
+  return new Promise((resolve, reject) => {
+    const loader = new GLTFLoader();
+    loader.load(url, function (gltf) {
+      resolve(gltf.scene); // Resolve with the loaded scene (model)
+    }, undefined, function (error) {
+      reject(error); // Reject on error
+    });
+  });
+}
+
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -111,28 +150,30 @@ function onKeyUp(event) {
 }
 
 function updatePlayerMovement() {
-  if (movingLeft) {
-    player.position.x -= playerSpeed;
-  }
-  if (movingRight) {
-    player.position.x += playerSpeed;
-  }
-  if (movingUp) {
-    player.position.y += playerSpeed;
-  }
-  if (movingDown) {
-    player.position.y -= playerSpeed;
-  }
+  if(player) {
+    if (movingLeft) {
+      player.position.x -= playerSpeed;
+    }
+    if (movingRight) {
+      player.position.x += playerSpeed;
+    }
+    if (movingUp) {
+      player.position.y += playerSpeed;
+    }
+    if (movingDown) {
+      player.position.y -= playerSpeed;
+    }
 
-  // Clamp player position within the cylinder
-  const distanceFromCenter = Math.sqrt(
-    player.position.x ** 2 + player.position.y ** 2
-  );
-  const maxRadius = 6.5; // Radius of the cylinder
-  if (distanceFromCenter > maxRadius) {
-    const angle = Math.atan2(player.position.y, player.position.x);
-    player.position.x = maxRadius * Math.cos(angle);
-    player.position.y = maxRadius * Math.sin(angle);
+    // Clamp player position within the cylinder
+    const distanceFromCenter = Math.sqrt(
+      player.position.x ** 2 + player.position.y ** 2
+    );
+    const maxRadius = 6.5; // Radius of the cylinder
+    if (distanceFromCenter > maxRadius) {
+      const angle = Math.atan2(player.position.y, player.position.x);
+      player.position.x = maxRadius * Math.cos(angle);
+      player.position.y = maxRadius * Math.sin(angle);
+    }
   }
 }
 
@@ -204,40 +245,131 @@ function updateCubes() {
 // Spawn a cube every 0.5 seconds
 setInterval(spawnCube, 500);
 
-function checkCollisions() {
-  const playerBox = new THREE.Box3().setFromObject(player);
+function destroyObject(object) {
+  // Remove the object from the scene
+  scene.remove(object);
 
-  cubes.forEach((cube) => {
-    const cubeBox = new THREE.Box3().setFromObject(cube);
-    if (!hasCollided && playerBox.intersectsBox(cubeBox)) {
-      //TODO: sound pas cool
-      hasCollided = true;
-      lives--;
-      livesText.text = `Lives: ${lives}`;
-      player.material.color.set(white);
-      setTimeout(() => {
-        player.material.color.set(green);
-      }, 100);
-      setTimeout(() => {
-        player.material.color.set(white);
-      }, 200);
-      setTimeout(() => {
-        player.material.color.set(green);
-      }, 300);
-      setTimeout(() => {
-        player.material.color.set(white);
-      }, 400);
-      setTimeout(() => {
-        player.material.color.set(green);
-        hasCollided = false;
-      }, 500);
+  // Also remove from the cubes array
+  const index = cubes.indexOf(object);
+  if (index > -1) {
+    cubes.splice(index, 1);
+  }
 
-      // if (lives === 0) {
-      //   alert("Game over!");
-      //   window.location.reload();
-      // }
+  // Trigger the blood spray effect at the object's position
+  createBloodSpray(object.position);
+}
+
+function createBloodSpray(position) {
+  const particleCount = 50; // Number of blood particles
+  const particles = new THREE.Group(); // Group to hold all particles
+
+  // Create a red material for the blood particles
+  const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+  // Loop to create individual particles
+  for (let i = 0; i < particleCount; i++) {
+    const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8); // Small sphere geometry
+    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+
+    // Randomize initial position slightly
+    particle.position.set(
+      position.x + (Math.random() - 0.5),
+      position.y + (Math.random() - 0.5),
+      position.z + (Math.random() - 0.5)
+    );
+
+    // Random velocity for the spray effect
+    particle.userData.velocity = new THREE.Vector3(
+      (Math.random() - 0.5) * 10, // Random x velocity
+      (Math.random() - 0.5) * 10, // Random y velocity
+      (Math.random() - 0.5) * 10  // Random z velocity
+    );
+
+    particles.add(particle);
+  }
+
+  // Add particles to the scene
+  scene.add(particles);
+
+  // Animate particles to simulate spray movement
+  const sprayDuration = 0.5; // Spray effect lasts 1 second
+  const sprayStartTime = performance.now();
+
+  // Add a custom update loop to animate the blood particles
+  function updateSpray() {
+    const currentTime = performance.now();
+    const elapsedTime = (currentTime - sprayStartTime) / 1000; // Convert to seconds
+
+    if (elapsedTime < sprayDuration) {
+      // Move each particle based on its velocity
+      particles.children.forEach((particle) => {
+        particle.position.add(particle.userData.velocity.clone().multiplyScalar(0.02)); // Move particle
+        particle.userData.velocity.multiplyScalar(0.95); // Dampen velocity for realism
+      });
+
+      // Continue animating in the next frame
+      requestAnimationFrame(updateSpray);
+    } else {
+      // Remove particles from the scene when the effect is done
+      scene.remove(particles);
     }
-  });
+  }
+
+  // Start the animation loop
+  updateSpray();
+}
+
+function checkCollisions() {
+  if (player){
+    const playerBox = new THREE.Box3().setFromObject(player);
+
+    cubes.forEach((cube) => {
+      const cubeBox = new THREE.Box3().setFromObject(cube);
+      if (!hasCollided && playerBox.intersectsBox(cubeBox)) {
+        //TODO: sound pas cool
+        hasCollided = true;
+        lives--;
+        livesText.text = `Lives: ${lives}`;
+        destroyObject(cube)
+        hasCollided = false;
+        /*
+        //if (player.material && player.material.color) {
+          player.material.transparent = true;
+          player.material.opacity = 0.7;  // Adjust the opacity to make it more faded (pale)
+          setTimeout(() => {
+            //player.material.color.set(green);
+            player.material.userData.originalColor = player.material.color.clone();
+          }, 100);
+          setTimeout(() => {
+            //player.material.color.set(white);
+            player.material.transparent = true;
+            player.material.opacity = 0.7;  // Adjust the opacity to make it more faded (pale)
+          }, 200);
+          setTimeout(() => {
+            //player.material.color.set(green);
+            player.material.userData.originalColor = player.material.color.clone();
+          }, 300);
+          setTimeout(() => {
+            //player.material.color.set(white);
+            player.material.transparent = true;
+            player.material.opacity = 0.7;  // Adjust the opacity to make it more faded (pale)
+          }, 400);
+          setTimeout(() => {
+            //player.material.color.set(green);
+            player.material.userData.originalColor = player.material.color.clone();
+            hasCollided = false;
+          }, 500);
+        //}
+        //player.material.color.set(white);*/
+        
+
+        // if (lives === 0) {
+        //   alert("Game over!");
+        //   window.location.reload();
+        // }
+      }
+    });
+  }
 }
 
 function animate() {
