@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Text } from "troika-three-text";
 import { ambiantSoundPlay } from "./sound.js";
@@ -136,25 +137,46 @@ function updatePlayerMovement() {
 }
 
 function spawnCube() {
-  const cubeGeometry = new THREE.CylinderGeometry(1, 1, 1);
-  const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-  const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+  const loader = new GLTFLoader();
+  loader.load('Pathogen-Surge/assets/models/globule_rouge.glb', function (gltf) {
+    const model = gltf.scene;
 
-  // Set random position within the cylinder at the beginning of the tube
-  const angle = Math.random() * 2 * Math.PI;
-  const minRadius = 1; // Minimum radius to avoid spawning cubes too close to the center
-  const maxRadius = 5; // Maximum radius within the cylinder
-  const radius = minRadius + Math.random() * (maxRadius - minRadius); // Random radius within the range
-  const height = -50; // Spawn at the beginning of the tube
+    // Create the red material
+    const redMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
-  cube.rotation.z = Math.random() * Math.PI;
-  cube.position.set(radius * Math.sin(angle), radius * Math.cos(angle), height);
-  const isLinear = Math.random() > 0.3;
-  cube.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
-  cube.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
-  scene.add(cube);
-  cubes.push(cube);
+    // Traverse the model to apply the red material to all meshes
+    model.traverse((child) => {
+      if (child.isMesh) {
+        child.material = redMaterial; // Apply the red material
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+
+    // Set random position within the cylinder at the beginning of the tube
+    const angle = Math.random() * 2 * Math.PI;
+    const minRadius = 1; // Minimum radius to avoid spawning models too close to the center
+    const maxRadius = 5; // Maximum radius within the cylinder
+    const radius = minRadius + Math.random() * (maxRadius - minRadius); // Random radius within the range
+    const height = -50; // Spawn at the beginning of the tube
+
+    model.rotation.z = Math.random() * Math.PI;
+    model.position.set(radius * Math.sin(angle), radius * Math.cos(angle), height);
+
+    const isLinear = Math.random() > 0.3;
+    model.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+    model.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+
+    // Optionally scale the model if it's too big or small
+    model.scale.set(0.8, 0.8, 0.8);
+
+    scene.add(model);
+    cubes.push(model); // Push the model into the cubes array
+  }, undefined, function (error) {
+    console.error('An error occurred while loading the model', error);
+  });
 }
+
 
 function updateCubes() {
   cubes.forEach((cube) => {

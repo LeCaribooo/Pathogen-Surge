@@ -22,7 +22,6 @@ export function ambiantSoundPlay(camera){
         sound.stop();
         sound_icon.style.display = "none";
         no_sound_icon.style.display = "";
-        //document.getElementById("no_sound_icone").position = "absolute";
     });
     no_sound_icon.addEventListener("click", () => {
         sound.play();
