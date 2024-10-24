@@ -4,7 +4,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Text } from "troika-three-text";
 import { ambiantSoundPlay } from "./sound.js";
 
-let scene, camera, renderer, player, floor;
+let scene, camera, renderer, player, floor, vessel;
 let speed = 0.2;
 const playerSpeed = 0.15;
 let movingLeft = false,
@@ -16,11 +16,7 @@ let lives = 3;
 let livesText;
 let hasCollided = false;
 
-const white = 0x99ff99;
-const green = 0x00ff00;
-
 init();
-console.log(player)
 animate();
 
 
@@ -68,13 +64,6 @@ function init() {
     console.error('An error occurred while loading the model', error);
   });
 
-  /*const playerGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-  const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-  player = new THREE.Mesh(playerGeometry, playerMaterial);
-  player.position.set(0, 0, 0);
-  player.rotation.x = Math.PI;
-  scene.add(player);*/
-
   // Camera
   camera = new THREE.PerspectiveCamera(
     75,
@@ -87,19 +76,43 @@ function init() {
   ambiantSoundPlay(camera);
 
   // Floor
-  const floorGeometry = new THREE.CylinderGeometry(7, 7, 200, 32, 1, true);
-  const floorMaterial = new THREE.MeshBasicMaterial({
-    color: 0x808080,
-    side: THREE.DoubleSide,
-  });
-  floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  floor.rotation.x = Math.PI / 2;
-  //floor.position.y = -0.5;
-  scene.add(floor);
+  loadModel('Pathogen-Surge/assets/models/blood_vessel.glb').then((vesselModel) => {
+    vessel = vesselModel;
+    
+  
+    // Traverse the model to apply shadows
+    vessel.traverse((child) => {
+      if (child.isMesh) {
+        const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+        child.material = redMaterial;
+        //child.material = new THREE.MeshBasicMaterial();
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+  
+    vessel.position.set(0, 0, 0);
+    vessel.scale.set(15, 15, 15);
+    //vessel.rotation.y = Math.PI * 3 / 2;
+  
+    scene.add(vessel);
+  
+    // Now you can use the player model in the scene
+    }).catch((error) => {
+      console.error('An error occurred while loading the model', error);
+    });
 
   // Lighting
-  const light = new THREE.AmbientLight(0xffffff);
+  //TODO
+  const light = new THREE.PointLight(0xffffff, 140);
+  light.position.set(0,0,-15)
+  light.lookAt(0,0,0)
   scene.add(light);
+
+  const light2 = new THREE.PointLight(0xffffff, 140);
+  light2.position.set(0,0,15)
+  light2.lookAt(0,0,0)
+  scene.add(light2);
 
   // Controls
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -183,7 +196,7 @@ function spawnCube() {
     const model = gltf.scene;
 
     // Create the red material
-    const redMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
 
     // Traverse the model to apply the red material to all meshes
     model.traverse((child) => {
@@ -264,7 +277,7 @@ function createBloodSpray(position) {
   const particles = new THREE.Group(); // Group to hold all particles
 
   // Create a red material for the blood particles
-  const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const particleMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
 
   // Loop to create individual particles
   for (let i = 0; i < particleCount; i++) {
@@ -332,36 +345,6 @@ function checkCollisions() {
         livesText.text = `Lives: ${lives}`;
         destroyObject(cube)
         hasCollided = false;
-        /*
-        //if (player.material && player.material.color) {
-          player.material.transparent = true;
-          player.material.opacity = 0.7;  // Adjust the opacity to make it more faded (pale)
-          setTimeout(() => {
-            //player.material.color.set(green);
-            player.material.userData.originalColor = player.material.color.clone();
-          }, 100);
-          setTimeout(() => {
-            //player.material.color.set(white);
-            player.material.transparent = true;
-            player.material.opacity = 0.7;  // Adjust the opacity to make it more faded (pale)
-          }, 200);
-          setTimeout(() => {
-            //player.material.color.set(green);
-            player.material.userData.originalColor = player.material.color.clone();
-          }, 300);
-          setTimeout(() => {
-            //player.material.color.set(white);
-            player.material.transparent = true;
-            player.material.opacity = 0.7;  // Adjust the opacity to make it more faded (pale)
-          }, 400);
-          setTimeout(() => {
-            //player.material.color.set(green);
-            player.material.userData.originalColor = player.material.color.clone();
-            hasCollided = false;
-          }, 500);
-        //}
-        //player.material.color.set(white);*/
-        
 
         // if (lives === 0) {
         //   alert("Game over!");
@@ -375,10 +358,11 @@ function checkCollisions() {
 function animate() {
   requestAnimationFrame(animate);
 
-  // Move the floor to simulate movement
-  floor.position.z += speed;
-  if (floor.position.z > 50) {
-    floor.position.z = 0;
+ if (vessel) {
+    vessel.position.z += speed;
+    if (vessel.position.z > 400) {
+      vessel.position.z = 0;
+    }
   }
 
   // Update player movement
