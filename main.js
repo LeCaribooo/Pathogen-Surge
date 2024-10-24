@@ -384,13 +384,13 @@ function animate() {
   }
 
   // Update player movement
-  //  updatePlayerMovement();
+  updatePlayerMovement();
 
   // Update cubes movement
-  // updateCubes();
+  updateCubes();
 
   // Check for collisions
-  // checkCollisions();
+  checkCollisions();
 
   renderer.render(scene, camera);
 }
