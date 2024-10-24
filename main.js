@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Text } from "troika-three-text";
 import { ambiantSoundPlay, destroySound } from "./sound.js";
@@ -19,14 +19,11 @@ let hasCollided = false;
 init();
 animate();
 
-
 function init() {
   scene = new THREE.Scene();
 
-  const axesHelper = new THREE.AxesHelper(10);
-  scene.add(axesHelper);
   livesText = new Text();
-  livesText.text = "Lives: 3";
+  livesText.text = `Lives: ${lives}`;
   livesText.color = 0xffffff;
   livesText.fontSize = 1;
 
@@ -40,29 +37,30 @@ function init() {
   // Player
   //const loader = new GLTFLoader();
   // Using the Promise to load the model
-  loadModel('Pathogen-Surge/assets/models/virus.glb').then((playerModel) => {
-  player = playerModel;
-  
+  loadModel("Pathogen-Surge/assets/models/virus.glb")
+    .then((playerModel) => {
+      player = playerModel;
 
-  // Traverse the model to apply shadows
-  player.traverse((child) => {
-    if (child.isMesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
+      // Traverse the model to apply shadows
+      player.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
 
-  player.position.set(0, 0, 0);
-  player.scale.set(0.5, 0.5, 0.5);
-  player.rotation.y = Math.PI * 3 / 2;
+      player.position.set(0, 0, 0);
+      player.scale.set(0.5, 0.5, 0.5);
+      player.rotation.y = (Math.PI * 3) / 2;
 
-  scene.add(player);
-  console.log(player)
+      scene.add(player);
+      console.log(player);
 
-  // Now you can use the player model in the scene
-  }).catch((error) => {
-    console.error('An error occurred while loading the model', error);
-  });
+      // Now you can use the player model in the scene
+    })
+    .catch((error) => {
+      console.error("An error occurred while loading the model", error);
+    });
 
   // Camera
   camera = new THREE.PerspectiveCamera(
@@ -73,53 +71,56 @@ function init() {
   );
   camera.position.set(0, 0, 10);
   livesText.position.set(-5, 5, 0);
-  ambiantSoundPlay(camera);
+  //ambiantSoundPlay(camera);
 
   // Floor
-  loadModel('Pathogen-Surge/assets/models/blood_vessel.glb').then((vesselModel) => {
-    vessel = vesselModel;
-    
-  
-    // Traverse the model to apply shadows
-    vessel.traverse((child) => {
-      if (child.isMesh) {
-        const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-        child.material = redMaterial;
-        //child.material = new THREE.MeshBasicMaterial();
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-  
-    vessel.position.set(0, 0, 0);
-    vessel.scale.set(15, 15, 15);
-    //vessel.rotation.y = Math.PI * 3 / 2;
-  
-    scene.add(vessel);
-  
-    // Now you can use the player model in the scene
-    }).catch((error) => {
-      console.error('An error occurred while loading the model', error);
+  loadModel("Pathogen-Surge/assets/models/blood_vessel.glb")
+    .then((vesselModel) => {
+      vessel = vesselModel;
+
+      // Traverse the model to apply shadows
+      vessel.traverse((child) => {
+        if (child.isMesh) {
+          const redMaterial = new THREE.MeshLambertMaterial({
+            color: 0xff0000,
+          });
+          child.material = redMaterial;
+          //child.material = new THREE.MeshBasicMaterial();
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      vessel.position.set(0, 0, 0);
+      vessel.scale.set(15, 15, 15);
+      //vessel.rotation.y = Math.PI * 3 / 2;
+
+      scene.add(vessel);
+
+      // Now you can use the player model in the scene
+    })
+    .catch((error) => {
+      console.error("An error occurred while loading the model", error);
     });
 
   // Lighting
   //TODO
   const light = new THREE.PointLight(0xffffff, 140);
-  light.position.set(0,0,-15)
-  light.lookAt(0,0,0)
+  light.position.set(0, 0, -15);
+  light.lookAt(0, 0, 0);
   scene.add(light);
 
   const light2 = new THREE.PointLight(0xffffff, 140);
-  light2.position.set(0,0,15)
-  light2.lookAt(0,0,0)
+  light2.position.set(0, 0, 15);
+  light2.lookAt(0, 0, 0);
   scene.add(light2);
 
   // Controls
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableKeys = false;
-  controls.enablePan = false;
-  controls.enableZoom = false;
-  controls.enableRotate = false;
+  //controls.enablePan = false;
+  //controls.enableZoom = false;
+  //controls.enableRotate = false;
 
   // Resize handler
   window.addEventListener("resize", onWindowResize);
@@ -132,11 +133,16 @@ function init() {
 function loadModel(url) {
   return new Promise((resolve, reject) => {
     const loader = new GLTFLoader();
-    loader.load(url, function (gltf) {
-      resolve(gltf.scene); // Resolve with the loaded scene (model)
-    }, undefined, function (error) {
-      reject(error); // Reject on error
-    });
+    loader.load(
+      url,
+      function (gltf) {
+        resolve(gltf.scene); // Resolve with the loaded scene (model)
+      },
+      undefined,
+      function (error) {
+        reject(error); // Reject on error
+      }
+    );
   });
 }
 
@@ -147,7 +153,6 @@ function onWindowResize() {
 }
 
 // Player control logic
-
 function onKeyDown(event) {
   if (event.key === "ArrowLeft") movingLeft = true;
   if (event.key === "ArrowRight") movingRight = true;
@@ -163,7 +168,7 @@ function onKeyUp(event) {
 }
 
 function updatePlayerMovement() {
-  if(player) {
+  if (player) {
     if (movingLeft) {
       player.position.x -= playerSpeed;
     }
@@ -192,54 +197,62 @@ function updatePlayerMovement() {
 
 function spawnCube() {
   const loader = new GLTFLoader();
-  loader.load('Pathogen-Surge/assets/models/globule_rouge.glb', function (gltf) {
-    const model = gltf.scene;
+  loader.load(
+    "Pathogen-Surge/assets/models/globule_rouge.glb",
+    function (gltf) {
+      const model = gltf.scene;
 
-    // Create the red material
-    const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+      // Create the red material
+      const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
 
-    // Traverse the model to apply the red material to all meshes
-    model.traverse((child) => {
-      if (child.isMesh) {
-        child.material = redMaterial; // Apply the red material
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
+      // Traverse the model to apply the red material to all meshes
+      model.traverse((child) => {
+        if (child.isMesh) {
+          child.material = redMaterial; // Apply the red material
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
 
-    // Set random position within the cylinder at the beginning of the tube
-    const angle = Math.random() * 2 * Math.PI;
-    const minRadius = 1; // Minimum radius to avoid spawning models too close to the center
-    const maxRadius = 5; // Maximum radius within the cylinder
-    const radius = minRadius + Math.random() * (maxRadius - minRadius); // Random radius within the range
-    const height = -50; // Spawn at the beginning of the tube
+      // Set random position within the cylinder at the beginning of the tube
+      const angle = Math.random() * 2 * Math.PI;
+      const minRadius = 1; // Minimum radius to avoid spawning models too close to the center
+      const maxRadius = 5; // Maximum radius within the cylinder
+      const radius = minRadius + Math.random() * (maxRadius - minRadius); // Random radius within the range
+      const height = -50; // Spawn at the beginning of the tube
 
-    model.rotation.z = Math.random() * Math.PI;
-    model.position.set(radius * Math.sin(angle), radius * Math.cos(angle), height);
+      model.rotation.z = Math.random() * Math.PI;
+      model.position.set(
+        radius * Math.sin(angle),
+        radius * Math.cos(angle),
+        height
+      );
 
-    const isLinear = Math.random() > 0.3;
-    model.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
-    model.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+      const isLinear = Math.random() > 0.3;
+      model.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+      model.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
 
-    // Optionally scale the model if it's too big or small
-    model.scale.set(0.8, 0.8, 0.8);
+      // Optionally scale the model if it's too big or small
+      model.scale.set(0.8, 0.8, 0.8);
 
-    scene.add(model);
-    cubes.push(model); // Push the model into the cubes array
-  }, undefined, function (error) {
-    console.error('An error occurred while loading the model', error);
-  });
+      scene.add(model);
+      cubes.push(model); // Push the model into the cubes array
+    },
+    undefined,
+    function (error) {
+      console.error("An error occurred while loading the model", error);
+    }
+  );
 }
-
 
 function updateCubes() {
   cubes.forEach((cube) => {
     cube.position.x += cube.userData.x;
     cube.position.y += cube.userData.y;
     cube.position.z += speed;
-    cube.rotation.x += Math.random() * 0.02
-    cube.rotation.y += Math.random() * 0.02
-    cube.rotation.z += Math.random() * 0.02
+    cube.rotation.x += Math.random() * 0.02;
+    cube.rotation.y += Math.random() * 0.02;
+    cube.rotation.z += Math.random() * 0.02;
 
     if (cube.position.z > 50) {
       scene.remove(cube);
@@ -298,7 +311,7 @@ function createBloodSpray(position) {
     particle.userData.velocity = new THREE.Vector3(
       (Math.random() - 0.5) * 10, // Random x velocity
       (Math.random() - 0.5) * 10, // Random y velocity
-      (Math.random() - 0.5) * 10  // Random z velocity
+      (Math.random() - 0.5) * 10 // Random z velocity
     );
 
     particles.add(particle);
@@ -319,7 +332,9 @@ function createBloodSpray(position) {
     if (elapsedTime < sprayDuration) {
       // Move each particle based on its velocity
       particles.children.forEach((particle) => {
-        particle.position.add(particle.userData.velocity.clone().multiplyScalar(0.02)); // Move particle
+        particle.position.add(
+          particle.userData.velocity.clone().multiplyScalar(0.02)
+        ); // Move particle
         particle.userData.velocity.multiplyScalar(0.95); // Dampen velocity for realism
       });
 
@@ -336,7 +351,7 @@ function createBloodSpray(position) {
 }
 
 function checkCollisions() {
-  if (player){
+  if (player) {
     const playerBox = new THREE.Box3().setFromObject(player);
 
     cubes.forEach((cube) => {
@@ -345,8 +360,8 @@ function checkCollisions() {
         hasCollided = true;
         lives--;
         livesText.text = `Lives: ${lives}`;
-        destroyObject(cube)
-        destroySound(camera)
+        destroyObject(cube);
+        destroySound(camera);
         hasCollided = false;
 
         // if (lives === 0) {
@@ -361,7 +376,7 @@ function checkCollisions() {
 function animate() {
   requestAnimationFrame(animate);
 
- if (vessel) {
+  if (vessel) {
     vessel.position.z += speed;
     if (vessel.position.z > 400) {
       vessel.position.z = 0;
@@ -369,13 +384,13 @@ function animate() {
   }
 
   // Update player movement
-  updatePlayerMovement();
+  //  updatePlayerMovement();
 
   // Update cubes movement
-  updateCubes();
+  // updateCubes();
 
   // Check for collisions
-  checkCollisions();
+  // checkCollisions();
 
   renderer.render(scene, camera);
 }
