@@ -4,7 +4,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Text } from "troika-three-text";
 import { ambiantSoundPlay, destroySound } from "./sound.js";
 
-let scene, camera, renderer, player, floor, vessel;
+let scene, camera, renderer, player, vessel;
 let speed = 0.2;
 const playerSpeed = 0.15;
 let movingLeft = false,
@@ -15,6 +15,7 @@ let cubes = [];
 let lives = 3;
 let livesText;
 let hasCollided = false;
+export let isPaused = false;
 
 init();
 animate();
@@ -71,7 +72,7 @@ function init() {
   );
   camera.position.set(0, 0, 10);
   livesText.position.set(-5, 5, 0);
-  //ambiantSoundPlay(camera);
+  ambiantSoundPlay(camera);
 
   // Floor
   loadModel("Pathogen-Surge/assets/models/blood_vessel.glb")
@@ -118,9 +119,9 @@ function init() {
   // Controls
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableKeys = false;
-  //controls.enablePan = false;
-  //controls.enableZoom = false;
-  //controls.enableRotate = false;
+  controls.enablePan = false;
+  controls.enableZoom = false;
+  controls.enableRotate = false;
 
   // Resize handler
   window.addEventListener("resize", onWindowResize);
@@ -129,6 +130,43 @@ function init() {
   document.addEventListener("keydown", onKeyDown);
   document.addEventListener("keyup", onKeyUp);
 }
+
+// Pause and Resume functions
+function pauseGame() {
+  isPaused = true;
+  document.getElementById("pauseMenu").style.display = "flex";
+}
+
+function resumeGame() {
+  isPaused = false;
+  document.getElementById("pauseMenu").style.display = "none";
+}
+
+function restartGame() {
+  lives = 3;
+  resumeGame();
+}
+
+function exitGame() {
+  //TODO
+  window.location.href = "index.html"; // Example redirect
+}
+
+// Add event listeners to the pause menu buttons
+document.getElementById("resumeButton").addEventListener("click", resumeGame);
+document.getElementById("restartButton").addEventListener("click", restartGame);
+document.getElementById("exitButton").addEventListener("click", exitGame);
+
+// Listen for the "p" key to toggle the pause menu
+window.addEventListener("keydown", (event) => {
+  if (event.key === "p") {
+    if (isPaused) {
+      resumeGame();
+    } else {
+      pauseGame();
+    }
+  }
+});
 
 function loadModel(url) {
   return new Promise((resolve, reject) => {
@@ -196,53 +234,55 @@ function updatePlayerMovement() {
 }
 
 function spawnCube() {
-  const loader = new GLTFLoader();
-  loader.load(
-    "Pathogen-Surge/assets/models/globule_rouge.glb",
-    function (gltf) {
-      const model = gltf.scene;
+  if (!isPaused) {
+    const loader = new GLTFLoader();
+    loader.load(
+      "Pathogen-Surge/assets/models/globule_rouge.glb",
+      function (gltf) {
+        const model = gltf.scene;
 
-      // Create the red material
-      const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+        // Create the red material
+        const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
 
-      // Traverse the model to apply the red material to all meshes
-      model.traverse((child) => {
-        if (child.isMesh) {
-          child.material = redMaterial; // Apply the red material
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
+        // Traverse the model to apply the red material to all meshes
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.material = redMaterial; // Apply the red material
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
 
-      // Set random position within the cylinder at the beginning of the tube
-      const angle = Math.random() * 2 * Math.PI;
-      const minRadius = 1; // Minimum radius to avoid spawning models too close to the center
-      const maxRadius = 5; // Maximum radius within the cylinder
-      const radius = minRadius + Math.random() * (maxRadius - minRadius); // Random radius within the range
-      const height = -50; // Spawn at the beginning of the tube
+        // Set random position within the cylinder at the beginning of the tube
+        const angle = Math.random() * 2 * Math.PI;
+        const minRadius = 1; // Minimum radius to avoid spawning models too close to the center
+        const maxRadius = 5; // Maximum radius within the cylinder
+        const radius = minRadius + Math.random() * (maxRadius - minRadius); // Random radius within the range
+        const height = -50; // Spawn at the beginning of the tube
 
-      model.rotation.z = Math.random() * Math.PI;
-      model.position.set(
-        radius * Math.sin(angle),
-        radius * Math.cos(angle),
-        height
-      );
+        model.rotation.z = Math.random() * Math.PI;
+        model.position.set(
+          radius * Math.sin(angle),
+          radius * Math.cos(angle),
+          height
+        );
 
-      const isLinear = Math.random() > 0.3;
-      model.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
-      model.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+        const isLinear = Math.random() > 0.3;
+        model.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+        model.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
 
-      // Optionally scale the model if it's too big or small
-      model.scale.set(0.8, 0.8, 0.8);
+        // Optionally scale the model if it's too big or small
+        model.scale.set(0.8, 0.8, 0.8);
 
-      scene.add(model);
-      cubes.push(model); // Push the model into the cubes array
-    },
-    undefined,
-    function (error) {
-      console.error("An error occurred while loading the model", error);
-    }
-  );
+        scene.add(model);
+        cubes.push(model); // Push the model into the cubes array
+      },
+      undefined,
+      function (error) {
+        console.error("An error occurred while loading the model", error);
+      }
+    );
+  }
 }
 
 function updateCubes() {
@@ -272,7 +312,18 @@ function updateCubes() {
 }
 
 // Spawn a cube every 0.5 seconds
-setInterval(spawnCube, 500);
+// Listen for visibility change events on the document
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    // If the page is not visible, stop the interval
+    clearInterval(intervalId);
+  } else {
+    // If the page becomes visible again, start the interval
+    intervalId = setInterval(spawnCube, 500);
+  }
+});
+
+let intervalId = setInterval(spawnCube, 500);
 
 function destroyObject(object) {
   // Remove the object from the scene
@@ -376,21 +427,23 @@ function checkCollisions() {
 function animate() {
   requestAnimationFrame(animate);
 
-  if (vessel) {
-    vessel.position.z += speed;
-    if (vessel.position.z > 400) {
-      vessel.position.z = 0;
+  if (!isPaused) {
+    if (vessel) {
+      vessel.position.z += speed;
+      if (vessel.position.z > 400) {
+        vessel.position.z = 0;
+      }
     }
+
+    // Update player movement
+    updatePlayerMovement();
+
+    // Update cubes movement
+    updateCubes();
+
+    // Check for collisions
+    checkCollisions();
+
+    renderer.render(scene, camera);
   }
-
-  // Update player movement
-  updatePlayerMovement();
-
-  // Update cubes movement
-  updateCubes();
-
-  // Check for collisions
-  checkCollisions();
-
-  renderer.render(scene, camera);
 }
