@@ -270,6 +270,8 @@ function spawnCube() {
         const isLinear = Math.random() > 0.3;
         model.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
         model.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+        const isFollowingPlayer = Math.random() < 0.1;
+        model.userData.isFollowingPlayer = isFollowingPlayer;
 
         // Optionally scale the model if it's too big or small
         model.scale.set(0.8, 0.8, 0.8);
@@ -287,9 +289,25 @@ function spawnCube() {
 
 function updateCubes() {
   cubes.forEach((cube) => {
-    cube.position.x += cube.userData.x;
-    cube.position.y += cube.userData.y;
-    cube.position.z += speed;
+    // Calculate direction vector towards the player
+    if (cube.userData.isFollowingPlayer) {
+      const directionToPlayer = new THREE.Vector3();
+      directionToPlayer.subVectors(player.position, cube.position);
+      directionToPlayer.z = 0; // Ignore the z component to restrict movement to x and y axes
+      directionToPlayer.normalize();
+
+      // Move the cube towards the player on x and y axes
+      const followSpeed = 0.05; // Adjust speed as needed
+      cube.position.x += directionToPlayer.x * followSpeed;
+      cube.position.y += directionToPlayer.y * followSpeed;
+
+      // Continue independent movement on the z axis
+      cube.position.z += speed;
+    } else {
+      cube.position.x += cube.userData.x;
+      cube.position.y += cube.userData.y;
+      cube.position.z += speed;
+    }
     cube.rotation.x += Math.random() * 0.02;
     cube.rotation.y += Math.random() * 0.02;
     cube.rotation.z += Math.random() * 0.02;
