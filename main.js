@@ -159,6 +159,7 @@ function resumeGame() {
 
 function restartGame() {
   lives = 3;
+  livesText.text = `Lives: ${lives}`;
   isPaused = false;
   resumeGame();
 }
