@@ -4,25 +4,44 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Text } from "troika-three-text";
 import { ambiantSoundPlay, destroySound } from "./sound.js";
 
+// Main entities's global variable
 let scene, camera, renderer, player, vessel;
+
+// Speed of the obstacles
 let speed = 0.2;
+
+// Player speed
 const playerSpeed = 0.15;
+
+// The player is moving or not
 let movingLeft = false,
   movingRight = false,
   movingUp = false,
   movingDown = false;
-let cubes = [];
+
+// List of all obstacles
+let bloodCells = [];
+
+// Counter of the player's life point
 let lives = 3;
+
+// Text to show life point to the player
 let livesText;
+
+// Boolean to determine is a collision has been trigerred
 let hasCollided = false;
+
+// Boolean to determine if the game is on pause
 export let isPaused = false;
 
 init();
 animate();
 
+// Function launched at the beginning to set up the game
 function init() {
   scene = new THREE.Scene();
 
+  // Lives settings
   livesText = new Text();
   livesText.text = `Lives: ${lives}`;
   livesText.color = 0xffffff;
@@ -35,9 +54,7 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  // Player
-  //const loader = new GLTFLoader();
-  // Using the Promise to load the model
+  // Player Load  
   loadModel("Pathogen-Surge/assets/models/virus.glb")
     .then((playerModel) => {
       player = playerModel;
@@ -50,20 +67,18 @@ function init() {
         }
       });
 
+      // Player settings
       player.position.set(0, 0, 0);
       player.scale.set(0.5, 0.5, 0.5);
       player.rotation.y = (Math.PI * 3) / 2;
 
       scene.add(player);
-      console.log(player);
-
-      // Now you can use the player model in the scene
     })
     .catch((error) => {
-      console.error("An error occurred while loading the model", error);
+      console.error("An error occurred while loading the player model", error);
     });
 
-  // Camera
+  // Camera settings
   camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -72,40 +87,40 @@ function init() {
   );
   camera.position.set(0, 0, 10);
   livesText.position.set(-5, 5, 0);
+
+  // Launch the ambiant sound loop
   ambiantSoundPlay(camera);
 
-  // Floor
+  // Blood vessel load
   loadModel("Pathogen-Surge/assets/models/blood_vessel.glb")
     .then((vesselModel) => {
       vessel = vesselModel;
 
-      // Traverse the model to apply shadows
+      // Traverse the model to apply shadows and material
       vessel.traverse((child) => {
         if (child.isMesh) {
+
+          // Using LambertMaterial to have a better use of shadows
           const redMaterial = new THREE.MeshLambertMaterial({
             color: 0xff0000,
           });
           child.material = redMaterial;
-          //child.material = new THREE.MeshBasicMaterial();
           child.castShadow = true;
           child.receiveShadow = true;
         }
       });
 
+      // Blood vessel settings
       vessel.position.set(0, 0, 0);
       vessel.scale.set(15, 15, 15);
-      //vessel.rotation.y = Math.PI * 3 / 2;
 
       scene.add(vessel);
-
-      // Now you can use the player model in the scene
     })
     .catch((error) => {
-      console.error("An error occurred while loading the model", error);
+      console.error("An error occurred while loading the blood vessel model", error);
     });
 
-  // Lighting
-  //TODO
+  // Lighting settings
   const light = new THREE.PointLight(0xffffff, 140);
   light.position.set(0, 0, -15);
   light.lookAt(0, 0, 0);
@@ -116,7 +131,7 @@ function init() {
   light2.lookAt(0, 0, 0);
   scene.add(light2);
 
-  // Controls
+  // Controls settings
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableKeys = false;
   controls.enablePan = false;
@@ -131,7 +146,7 @@ function init() {
   document.addEventListener("keyup", onKeyUp);
 }
 
-// Pause and Resume functions
+// Pause, Resume, Restart and Exit functions
 function pauseGame() {
   isPaused = true;
   document.getElementById("pauseMenu").style.display = "flex";
@@ -144,11 +159,13 @@ function resumeGame() {
 
 function restartGame() {
   lives = 3;
+  isPaused = false;
   resumeGame();
 }
 
 function exitGame() {
   //TODO
+  isPaused = false;
   window.location.href = "index.html"; // Example redirect
 }
 
@@ -168,29 +185,31 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
-function loadModel(url) {
+// Function use the Promise to load the model given in parameter
+function loadModel(path) {
   return new Promise((resolve, reject) => {
     const loader = new GLTFLoader();
     loader.load(
-      url,
+      path,
       function (gltf) {
-        resolve(gltf.scene); // Resolve with the loaded scene (model)
+        resolve(gltf.scene);
       },
       undefined,
       function (error) {
-        reject(error); // Reject on error
+        reject(error);
       }
     );
   });
 }
 
+// Window Resize function
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-// Player control logic
+// Player control logic functions
 function onKeyDown(event) {
   if (event.key === "ArrowLeft") movingLeft = true;
   if (event.key === "ArrowRight") movingRight = true;
@@ -205,6 +224,7 @@ function onKeyUp(event) {
   if (event.key === "ArrowDown") movingDown = false;
 }
 
+// Player movement update function
 function updatePlayerMovement() {
   if (player) {
     if (movingLeft) {
@@ -220,11 +240,13 @@ function updatePlayerMovement() {
       player.position.y -= playerSpeed;
     }
 
-    // Clamp player position within the cylinder
+    // Clamp player position within the blood vessel
     const distanceFromCenter = Math.sqrt(
       player.position.x ** 2 + player.position.y ** 2
     );
-    const maxRadius = 6.5; // Radius of the cylinder
+
+    const maxRadius = 6.5; // Radius of the blood vessel
+
     if (distanceFromCenter > maxRadius) {
       const angle = Math.atan2(player.position.y, player.position.x);
       player.position.x = maxRadius * Math.cos(angle);
@@ -233,21 +255,20 @@ function updatePlayerMovement() {
   }
 }
 
-function spawnCube() {
+// Function to spawn the blood cells
+function spawnBloodCell() {
   if (!isPaused) {
-    const loader = new GLTFLoader();
-    loader.load(
-      "Pathogen-Surge/assets/models/globule_rouge.glb",
-      function (gltf) {
-        const model = gltf.scene;
+    loadModel("Pathogen-Surge/assets/models/globule_rouge.glb")
+    .then((bloodCellModel) => {
+        const bloodCell = bloodCellModel.scene;
 
-        // Create the red material
+        // Create the lambert red material to have a better use of shadows
         const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
 
-        // Traverse the model to apply the red material to all meshes
-        model.traverse((child) => {
+        // Traverse the model to use shadows and apply the material to all meshes
+        bloodCell.traverse((child) => {
           if (child.isMesh) {
-            child.material = redMaterial; // Apply the red material
+            child.material = redMaterial;
             child.castShadow = true;
             child.receiveShadow = true;
           }
@@ -256,80 +277,87 @@ function spawnCube() {
         // Set random position within the cylinder at the beginning of the tube
         const angle = Math.random() * 2 * Math.PI;
         const minRadius = 1; // Minimum radius to avoid spawning models too close to the center
-        const maxRadius = 5; // Maximum radius within the cylinder
+        const maxRadius = 6; // Maximum radius within the cylinder
         const radius = minRadius + Math.random() * (maxRadius - minRadius); // Random radius within the range
         const height = -50; // Spawn at the beginning of the tube
 
-        model.rotation.z = Math.random() * Math.PI;
-        model.position.set(
+        bloodCell.rotation.z = Math.random() * Math.PI;
+        bloodCell.position.set(
           radius * Math.sin(angle),
           radius * Math.cos(angle),
           height
         );
 
+        // 30% chance to make a rebound blood cell appear
         const isLinear = Math.random() > 0.3;
-        model.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
-        model.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+        bloodCell.userData.x = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+        bloodCell.userData.y = isLinear ? 0 : (Math.random() * 2 - 1) * speed;
+
+        // 10% chance to make a following blood cell appear
         const isFollowingPlayer = Math.random() < 0.1;
-        model.userData.isFollowingPlayer = isFollowingPlayer;
+        bloodCell.userData.isFollowingPlayer = isFollowingPlayer;
 
-        // Optionally scale the model if it's too big or small
-        model.scale.set(0.8, 0.8, 0.8);
+        // bloodCell Settings
+        bloodCell.scale.set(0.8, 0.8, 0.8);
 
-        scene.add(model);
-        cubes.push(model); // Push the model into the cubes array
+        scene.add(bloodCell);
+        bloodCells.push(bloodCell); // Push the bloodCell into the bloodCells array
       },
       undefined,
       function (error) {
-        console.error("An error occurred while loading the model", error);
+        console.error("An error occurred while loading the blood cell model", error);
       }
     );
   }
 }
 
-function updateCubes() {
-  cubes.forEach((cube) => {
-    // Calculate direction vector towards the player
-    if (cube.userData.isFollowingPlayer) {
+// Function to update the blood cells into the blood vessel
+function updateBloodCells() {
+  bloodCells.forEach((bloodCell) => {
+    // Update the following blood cells position
+    if (bloodCell.userData.isFollowingPlayer) {
       const directionToPlayer = new THREE.Vector3();
-      directionToPlayer.subVectors(player.position, cube.position);
+      directionToPlayer.subVectors(player.position, bloodCell.position);
       directionToPlayer.z = 0; // Ignore the z component to restrict movement to x and y axes
       directionToPlayer.normalize();
 
-      // Move the cube towards the player on x and y axes
-      const followSpeed = 0.05; // Adjust speed as needed
-      cube.position.x += directionToPlayer.x * followSpeed;
-      cube.position.y += directionToPlayer.y * followSpeed;
+      // Move the bloodCell towards the player on x and y axes
+      const followSpeed = 0.05;
+      bloodCell.position.x += directionToPlayer.x * followSpeed;
+      bloodCell.position.y += directionToPlayer.y * followSpeed;
 
       // Continue independent movement on the z axis
-      cube.position.z += speed;
+      bloodCell.position.z += speed;
     } else {
-      cube.position.x += cube.userData.x;
-      cube.position.y += cube.userData.y;
-      cube.position.z += speed;
-    }
-    cube.rotation.x += Math.random() * 0.02;
-    cube.rotation.y += Math.random() * 0.02;
-    cube.rotation.z += Math.random() * 0.02;
-
-    if (cube.position.z > 50) {
-      scene.remove(cube);
-      cubes = cubes.filter((c) => c !== cube);
+      // Update all other blood cells position
+      bloodCell.position.x += bloodCell.userData.x;
+      bloodCell.position.y += bloodCell.userData.y;
+      bloodCell.position.z += speed;
     }
 
-    // Invert userData values if cube goes out of bounds
+    // Update all blood cells rotation
+    bloodCell.rotation.x += Math.random() * 0.02;
+    bloodCell.rotation.y += Math.random() * 0.02;
+    bloodCell.rotation.z += Math.random() * 0.02;
+
+    // Remove blood cells when they are not on the screen anymore
+    if (bloodCell.position.z > 50) {
+      scene.remove(bloodCell);
+      bloodCells = bloodCells.filter((c) => c !== bloodCell);
+    }
+
+    // Manage rebound to the rebound blood cells
     const distanceFromCenter = Math.sqrt(
-      cube.position.x ** 2 + cube.position.y ** 2
+      bloodCell.position.x ** 2 + bloodCell.position.y ** 2
     );
     const maxRadius = 7; // Radius of the cylinder
     if (distanceFromCenter > maxRadius) {
-      cube.userData.x = -cube.userData.x;
-      cube.userData.y = -cube.userData.y;
+      bloodCell.userData.x = -bloodCell.userData.x;
+      bloodCell.userData.y = -bloodCell.userData.y;
     }
   });
 }
 
-// Spawn a cube every 0.5 seconds
 // Listen for visibility change events on the document
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
@@ -337,31 +365,37 @@ document.addEventListener("visibilitychange", () => {
     clearInterval(intervalId);
   } else {
     // If the page becomes visible again, start the interval
-    intervalId = setInterval(spawnCube, 500);
+    // Spawn a bloodCell every 0.5 seconds
+    intervalId = setInterval(spawnBloodCell, 500);
   }
 });
 
-let intervalId = setInterval(spawnCube, 500);
+// Spawn a bloodCell every 0.5 seconds
+let intervalId = setInterval(spawnBloodCell, 500);
 
-function destroyObject(object) {
-  // Remove the object from the scene
-  scene.remove(object);
+// Function to remove a blood cell when it collides with the player 
+function destroyBloodCellCollided(bloodCell) {
 
-  // Also remove from the cubes array
-  const index = cubes.indexOf(object);
+  // Remove the bloodCell from the scene
+  scene.remove(bloodCell);
+
+  // Also remove from the bloodCells array
+  const index = bloodCells.indexOf(bloodCell);
   if (index > -1) {
-    cubes.splice(index, 1);
+    bloodCells.splice(index, 1);
   }
 
-  // Trigger the blood spray effect at the object's position
-  createBloodSpray(object.position);
+  // Trigger the blood spray effect at the blood cell's position
+  createBloodSpray(bloodCell.position);
 }
 
+// Function to create a blood spray at the given position
 function createBloodSpray(position) {
+
   const particleCount = 50; // Number of blood particles
   const particles = new THREE.Group(); // Group to hold all particles
 
-  // Create a red material for the blood particles
+  // Create a lambert red material for the blood particles
   const particleMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
 
   // Loop to create individual particles
@@ -390,10 +424,10 @@ function createBloodSpray(position) {
   scene.add(particles);
 
   // Animate particles to simulate spray movement
-  const sprayDuration = 0.5; // Spray effect lasts 1 second
+  const sprayDuration = 0.5; // Spray effect lasts 0.5 second
   const sprayStartTime = performance.now();
 
-  // Add a custom update loop to animate the blood particles
+  // Update loop to animate the blood particles
   function updateSpray() {
     const currentTime = performance.now();
     const elapsedTime = (currentTime - sprayStartTime) / 1000; // Convert to seconds
@@ -419,29 +453,28 @@ function createBloodSpray(position) {
   updateSpray();
 }
 
+// Function to check if a blood cell collide the player
 function checkCollisions() {
   if (player) {
+    // Player box collider
     const playerBox = new THREE.Box3().setFromObject(player);
 
-    cubes.forEach((cube) => {
-      const cubeBox = new THREE.Box3().setFromObject(cube);
-      if (!hasCollided && playerBox.intersectsBox(cubeBox)) {
+    bloodCells.forEach((bloodCell) => {
+      const bloodCellBox = new THREE.Box3().setFromObject(bloodCell);
+      if (!hasCollided && playerBox.intersectsBox(bloodCellBox)) { // Collision trigerred
         hasCollided = true;
         lives--;
         livesText.text = `Lives: ${lives}`;
-        destroyObject(cube);
+        destroyBloodCellCollided(bloodCell);
         destroySound(camera);
         hasCollided = false;
-
-        // if (lives === 0) {
-        //   alert("Game over!");
-        //   window.location.reload();
-        // }
+        // TODO: Game over
       }
     });
   }
 }
 
+// Function to update all elements in the scene
 function animate() {
   requestAnimationFrame(animate);
 
@@ -456,8 +489,8 @@ function animate() {
     // Update player movement
     updatePlayerMovement();
 
-    // Update cubes movement
-    updateCubes();
+    // Update bloodCells movement
+    updateBloodCells();
 
     // Check for collisions
     checkCollisions();
