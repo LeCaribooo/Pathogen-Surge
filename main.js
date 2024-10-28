@@ -260,7 +260,7 @@ function spawnBloodCell() {
   if (!isPaused) {
     loadModel("Pathogen-Surge/assets/models/globule_rouge.glb")
     .then((bloodCellModel) => {
-        const bloodCell = bloodCellModel.scene;
+        const bloodCell = bloodCellModel;
 
         // Create the lambert red material to have a better use of shadows
         const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
