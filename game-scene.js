@@ -9,7 +9,6 @@ export class GameScene extends BaseScene {
   constructor(sceneManager, bodyPart) {
     super(sceneManager);
     this.bodyPart = bodyPart;
-    console.log(this.bodyPart);
 
     // Game entities
     this.player = null;
@@ -18,9 +17,34 @@ export class GameScene extends BaseScene {
     this.livesText = null;
 
     // Game state
-    this.speed = 0.2;
-    this.playerSpeed = 0.15;
-    this.lives = 3;
+    this.info = {
+      "Head": {
+        speed: 0.2,
+        playerSpeed: 0.15,
+        lives: 3,
+      },
+      "Legs": {
+        speed: 0.3,
+        playerSpeed: 0.2,
+        lives: 2,
+      },
+      "Chest": {
+        speed: 0.4,
+        playerSpeed: 0.25,
+        lives: 3,
+      },
+      "Left Arm": {
+        speed: 0.5,
+        playerSpeed: 0.3,
+        lives: 3,
+      },
+      "Right Arm": {
+        speed: 0.6,
+        playerSpeed: 0.35,
+        lives: 2,
+      },
+    };
+    this.lives = this.info[this.bodyPart].lives;
     this.hasCollided = false;
     this.isPaused = false;
 
@@ -228,10 +252,10 @@ export class GameScene extends BaseScene {
 
   updatePlayerMovement() {
     if (this.player) {
-      if (this.movingLeft) this.player.position.x -= this.playerSpeed;
-      if (this.movingRight) this.player.position.x += this.playerSpeed;
-      if (this.movingUp) this.player.position.y += this.playerSpeed;
-      if (this.movingDown) this.player.position.y -= this.playerSpeed;
+      if (this.movingLeft) this.player.position.x -= this.info[this.bodyPart].playerSpeed;
+      if (this.movingRight) this.player.position.x += this.info[this.bodyPart].playerSpeed;
+      if (this.movingUp) this.player.position.y += this.info[this.bodyPart].playerSpeed;
+      if (this.movingDown) this.player.position.y -= this.info[this.bodyPart].playerSpeed;
 
       // Clamp player position
       const distanceFromCenter = Math.sqrt(
@@ -288,10 +312,10 @@ export class GameScene extends BaseScene {
         const isLinear = Math.random() > 0.3;
         bloodCell.userData.x = isLinear
           ? 0
-          : (Math.random() * 2 - 1) * this.speed;
+          : (Math.random() * 2 - 1) * this.info[this.bodyPart].speed;
         bloodCell.userData.y = isLinear
           ? 0
-          : (Math.random() * 2 - 1) * this.speed;
+          : (Math.random() * 2 - 1) * this.info[this.bodyPart].speed;
         bloodCell.userData.isFollowingPlayer = Math.random() < 0.1;
 
         bloodCell.scale.set(0.8, 0.8, 0.8);
@@ -319,7 +343,7 @@ export class GameScene extends BaseScene {
       } else {
         bloodCell.position.x += bloodCell.userData.x;
         bloodCell.position.y += bloodCell.userData.y;
-        bloodCell.position.z += this.speed;
+        bloodCell.position.z += this.info[this.bodyPart].speed;
       }
 
       bloodCell.rotation.x += Math.random() * 0.02;
@@ -425,7 +449,7 @@ export class GameScene extends BaseScene {
   update() {
     if (!this.isPaused) {
       if (this.vessel) {
-        this.vessel.position.z += this.speed;
+        this.vessel.position.z += this.info[this.bodyPart].speed;
         if (this.vessel.position.z > 400) {
           this.vessel.position.z = 0;
         }
