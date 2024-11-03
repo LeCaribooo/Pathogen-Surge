@@ -4,6 +4,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Text } from "troika-three-text";
 import { SoundManager } from "./sound-manager.js";
+import { distance } from "three/webgpu";
 
 export class GameScene extends BaseScene {
   constructor(sceneManager, bodyPart) {
@@ -22,31 +23,37 @@ export class GameScene extends BaseScene {
         speed: 0.2,
         playerSpeed: 0.15,
         lives: 3,
+        distance: 1000,
       },
       "Legs": {
         speed: 0.3,
         playerSpeed: 0.2,
         lives: 2,
+        distance: 700,
       },
       "Chest": {
         speed: 0.4,
         playerSpeed: 0.25,
         lives: 3,
+        distance: 600,
       },
       "Left Arm": {
         speed: 0.5,
         playerSpeed: 0.3,
         lives: 3,
+        distance: 600,
       },
       "Right Arm": {
-        speed: 0.6,
+        speed: 0.4,
         playerSpeed: 0.35,
         lives: 2,
+        distance: 600,
       },
     };
     this.lives = this.info[this.bodyPart].lives;
     this.hasCollided = false;
     this.isPaused = false;
+    this.distance = 0;
 
     // Movement state
     this.movingLeft = false;
@@ -255,6 +262,7 @@ export class GameScene extends BaseScene {
 
   updatePlayerMovement() {
     if (this.player) {
+      this.distance += this.info[this.bodyPart].playerSpeed;
       if (this.movingLeft) this.player.position.x -= this.info[this.bodyPart].playerSpeed;
       if (this.movingRight) this.player.position.x += this.info[this.bodyPart].playerSpeed;
       if (this.movingUp) this.player.position.y += this.info[this.bodyPart].playerSpeed;
@@ -464,6 +472,10 @@ export class GameScene extends BaseScene {
       this.updatePlayerMovement();
       this.updateBloodCells();
       this.checkCollisions();
+
+      if (this.distance >= this.info[this.bodyPart].distance) {
+        this.sceneManager.switchScene("end", this.bodyPart);
+      }
     }
 
     super.update();
@@ -473,5 +485,6 @@ export class GameScene extends BaseScene {
     // Remove event listeners
     document.removeEventListener("keydown", this.onKeyDown.bind(this));
     document.removeEventListener;
+    return super.cleanup();
   }
 }
