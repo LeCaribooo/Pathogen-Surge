@@ -121,7 +121,7 @@ export class GameScene extends BaseScene {
     try {
       const gltf = await this.loadModel(
         loader,
-        "Pathogen-Surge/assets/models/virus.glb"
+        (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/models/virus.glb'
       );
       this.player = gltf;
 
@@ -147,7 +147,7 @@ export class GameScene extends BaseScene {
     try {
       const gltf = await this.loadModel(
         loader,
-        "Pathogen-Surge/assets/models/blood_vessel.glb"
+        (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/models/blood_vessel.glb'
       );
       this.vessel = gltf;
 
@@ -291,7 +291,7 @@ export class GameScene extends BaseScene {
       try {
         const bloodCellModel = await this.loadModel(
           loader,
-          "Pathogen-Surge/assets/models/globule_rouge.glb"
+          (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/models/blood_cell.glb'
         );
         const bloodCell = bloodCellModel;
 

@@ -78,7 +78,7 @@ export class EndScene extends BaseScene {
     // Load models
     this.model = await this.loadModel(
       loader,
-      `Pathogen-Surge/assets/models/${this.info[this.bodyPart].model}`
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + `assets/models/${this.info[this.bodyPart].model}`
     );
     this.model.scale.set(
         this.info[this.bodyPart].scale,

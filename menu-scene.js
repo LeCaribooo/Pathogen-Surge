@@ -45,11 +45,11 @@ export class MenuScene extends BaseScene {
     // Load models
     this.angiologyModel = await this.loadModel(
       loader,
-      "Pathogen-Surge/assets/models/angiology.glb"
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/models/angiology.glb'
     );
     this.arthrologyModel = await this.loadModel(
       loader,
-      "Pathogen-Surge/assets/models/arthrology.glb"
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/models/arthrology.glb'
     );
 
     this.scene.add(this.angiologyModel);
