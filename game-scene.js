@@ -484,7 +484,8 @@ export class GameScene extends BaseScene {
   async cleanup() {
     // Remove event listeners
     document.removeEventListener("keydown", this.onKeyDown.bind(this));
-    document.removeEventListener;
+    // clear
+    clearInterval(this.intervalId);
     return super.cleanup();
   }
 }

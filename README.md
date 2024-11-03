@@ -10,6 +10,8 @@ In this project you are a virus that chooses which area of the human body you wa
 
 ## Where to play ?
 
+**The website is quite low to load because of model weight !**
+
 https://lecaribooo.github.io/Pathogen-Surge/
 
 ## Members and work done
