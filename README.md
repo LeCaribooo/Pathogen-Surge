@@ -15,17 +15,19 @@ https://lecaribooo.github.io/Pathogen-Surge/
 ## Members and work done
 
 Yoan BIGGIO:
-    - Sound
-    - Virus, vessel and red blood cell model in blender
-    - Blood cell animations
-    - Game Over Scene
+
+- Sound
+- Virus, vessel and red blood cell model in blender
+- Blood cell animations
+- Game Over Scene
 
 Pierre-Alexis VALBRUN:
-    - Movements of the player
-    - Scene management
-    - Menu scene
-    - End scene
-    - Deployment
+
+- Movements of the player
+- Scene management
+- Menu scene
+- End scene
+- Deployment
 
 ## Sources
 
