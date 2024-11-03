@@ -247,6 +247,9 @@ export class GameScene extends BaseScene {
   }
 
   exitGame() {
+    this.isPaused = false;
+    this.soundManager.handlePause();
+    document.getElementById("pauseMenu").style.display = "none";
     this.sceneManager.switchScene("menu");
   }
 
@@ -440,6 +443,9 @@ export class GameScene extends BaseScene {
 
           if (this.lives <= 0) {
             // Game over logic here
+            this.isPaused = true;
+            this.soundManager.handlePause();
+            this.sceneManager.switchScene("game-over", this.bodyPart);
           }
         }
       });
