@@ -18,8 +18,9 @@ Yoan BIGGIO:
 
 - Sound
 - Virus, vessel and red blood cell model in blender
-- Blood cell animations
+- Blood cell animations (rotation + particle effect)
 - Game Over Scene
+- Pause System
 
 Pierre-Alexis VALBRUN:
 
@@ -40,3 +41,5 @@ You can find here all the sources for the model we used:
 - `intestine.glb`: "Small and large intestine" (https://skfb.ly/6SDn9) by antonia.sundberg is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
 - `liver.glb`: "Liver" (https://skfb.ly/6XnBD) by Errin Roy is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
 - `lungs.glb`: "Realistic Human Lungs" (https://skfb.ly/oBDWI) by neshallads is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
+And all sounds come from this website : https://www.zapsplat.com/
