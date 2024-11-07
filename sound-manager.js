@@ -10,10 +10,10 @@ export class SoundManager {
     this.intervalSoundId = null;
 
     this.sounds = [
-      "Pathogen-Surge/assets/sounds/water_09.mp3",
-      "Pathogen-Surge/assets/sounds/water_10.mp3",
-      "Pathogen-Surge/assets/sounds/water_11.mp3",
-      "Pathogen-Surge/assets/sounds/water_12.mp3",
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/water_09.mp3',
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/water_10.mp3',
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/water_11.mp3',
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/water_12.mp3'
     ];
 
     this.currentSoundIndex = -1;
@@ -87,7 +87,7 @@ export class SoundManager {
       const destroySound = new THREE.Audio(this.listener);
       const audioLoader = new THREE.AudioLoader();
 
-      audioLoader.load("Pathogen-Surge/assets/sounds/pop.mp3", (buffer) => {
+      audioLoader.load((import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/pop.mp3', (buffer) => {
         destroySound.setBuffer(buffer);
         destroySound.setLoop(false);
         destroySound.setVolume(0.5);

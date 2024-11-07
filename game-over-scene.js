@@ -26,7 +26,7 @@ export class GameOverScene extends BaseScene {
 
     // Load the background texture
     const textureLoader = new THREE.TextureLoader();
-    const backgroundTexture = textureLoader.load("Pathogen-Surge/assets/picture/game-over-picture.png");
+    const backgroundTexture = textureLoader.load((import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/picture/game-over-picture.png');
 
     // Create a large plane with the background texture
     const geometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
