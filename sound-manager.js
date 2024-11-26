@@ -10,10 +10,10 @@ export class SoundManager {
     this.intervalSoundId = null;
 
     this.sounds = [
-      'assets/sounds/water_09.mp3',
-      'assets/sounds/water_10.mp3',
-      'assets/sounds/water_11.mp3',
-      'assets/sounds/water_12.mp3'
+      "assets/sounds/water_09.mp3",
+      "assets/sounds/water_10.mp3",
+      "assets/sounds/water_11.mp3",
+      "assets/sounds/water_12.mp3",
     ];
 
     this.currentSoundIndex = -1;
@@ -57,12 +57,16 @@ export class SoundManager {
         this.sounds.length - 1
       );
       const audioLoader = new THREE.AudioLoader();
-      audioLoader.load(this.sounds[this.currentSoundIndex], (buffer) => {
-        this.ambientSound.setBuffer(buffer);
-        this.ambientSound.setLoop(false);
-        this.ambientSound.setVolume(0.1);
-        this.ambientSound.play();
-      });
+      audioLoader.load(
+        (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
+          this.sounds[this.currentSoundIndex],
+        (buffer) => {
+          this.ambientSound.setBuffer(buffer);
+          this.ambientSound.setLoop(false);
+          this.ambientSound.setVolume(0.1);
+          this.ambientSound.play();
+        }
+      );
     }
   }
 
@@ -87,12 +91,16 @@ export class SoundManager {
       const destroySound = new THREE.Audio(this.listener);
       const audioLoader = new THREE.AudioLoader();
 
-      audioLoader.load('assets/sounds/pop.mp3', (buffer) => {
-        destroySound.setBuffer(buffer);
-        destroySound.setLoop(false);
-        destroySound.setVolume(0.5);
-        destroySound.play();
-      });
+      audioLoader.load(
+        (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
+          "assets/sounds/pop.mp3",
+        (buffer) => {
+          destroySound.setBuffer(buffer);
+          destroySound.setLoop(false);
+          destroySound.setVolume(0.5);
+          destroySound.play();
+        }
+      );
     }
   }
 
