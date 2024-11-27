@@ -443,7 +443,7 @@ export class GameArScene extends BaseScene {
       this.checkCollisions();
 
       if (this.distance >= this.info[this.bodyPart].distance) {
-        this.sceneManager.switchScene("end", this.bodyPart);
+        this.sceneManager.switchScene("endAr", this.bodyPart);
       }
     }
 
