@@ -78,12 +78,12 @@ export class MenuArScene extends BaseScene {
       this.loadModel(
         loader,
         (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
-          "assets/models/angiology.glb"
+        "assets/models/angiology.glb"
       ),
       this.loadModel(
         loader,
         (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
-          "assets/models/arthrology.glb"
+        "assets/models/arthrology.glb"
       ),
     ]);
 
@@ -225,7 +225,7 @@ export class MenuArScene extends BaseScene {
     const tapInterval = currentTime - this.lastTapTime;
 
     if (tapInterval < 300 && tapInterval > 0) {
-      await this.sceneManager.switchScene("game", this.selectedObject.name);
+      await this.sceneManager.switchScene("gameAr", this.selectedObject.name);
     }
 
     this.lastTapTime = currentTime;
