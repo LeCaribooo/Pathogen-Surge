@@ -1,5 +1,6 @@
 import * as THREE from "three";
 
+import { SoundManager } from "./sound-manager.js";
 import { BaseScene } from "./base-scene.js";
 
 export class GameOverScene extends BaseScene {
@@ -21,6 +22,8 @@ export class GameOverScene extends BaseScene {
     );
     this.camera.position.z = 1;
 
+    this.soundManager = new SoundManager(this.camera, () => true);
+
     // Set up overlay div for UI elements
     this.createGameOverUI();
 
@@ -34,6 +37,7 @@ export class GameOverScene extends BaseScene {
     const background = new THREE.Mesh(geometry, material);
     background.position.z = -1; // Place it behind other elements
     this.scene.add(background);
+    this.soundManager.playGameOverSound();
   }
 
   // Creates the Game Over UI overlay

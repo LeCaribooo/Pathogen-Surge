@@ -9,11 +9,11 @@ export class SoundManager {
     this.ambientSound = new THREE.Audio(this.listener);
     this.intervalSoundId = null;
 
-    this.sounds = [
-      'assets/sounds/water_09.mp3',
-      'assets/sounds/water_10.mp3',
-      'assets/sounds/water_11.mp3',
-      'assets/sounds/water_12.mp3'
+    this.playingSounds = [
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/water_09.mp3',
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/water_10.mp3',
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/water_11.mp3',
+      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/water_12.mp3'
     ];
 
     this.currentSoundIndex = -1;
@@ -41,7 +41,8 @@ export class SoundManager {
         clearInterval(this.intervalSoundId);
         this.ambientSound.pause();
       } else {
-        this.intervalSoundId = setInterval(() => this.checkSoundEnd(), 100);
+        if (!this.getPausedState())
+          this.intervalSoundId = setInterval(() => this.checkSoundEnd(), 100);
       }
     });
   }
@@ -54,10 +55,10 @@ export class SoundManager {
     if (!this.getPausedState()) {
       this.currentSoundIndex = this.randomIntFromInterval(
         0,
-        this.sounds.length - 1
+        this.playingSounds.length - 1
       );
       const audioLoader = new THREE.AudioLoader();
-      audioLoader.load(this.sounds[this.currentSoundIndex], (buffer) => {
+      audioLoader.load(this.playingSounds[this.currentSoundIndex], (buffer) => {
         this.ambientSound.setBuffer(buffer);
         this.ambientSound.setLoop(false);
         this.ambientSound.setVolume(0.1);
@@ -87,11 +88,37 @@ export class SoundManager {
       const destroySound = new THREE.Audio(this.listener);
       const audioLoader = new THREE.AudioLoader();
 
-      audioLoader.load('assets/sounds/pop.mp3', (buffer) => {
+      audioLoader.load((import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/pop.mp3', (buffer) => {
         destroySound.setBuffer(buffer);
         destroySound.setLoop(false);
         destroySound.setVolume(0.5);
         destroySound.play();
+      });
+    }
+  }
+
+  playGameOverSound() {
+    if (this.noSoundIcon.style.display === "none") {
+      const gameOverSound = new THREE.Audio(this.listener);
+      const audioLoader = new THREE.AudioLoader();
+
+      audioLoader.load((import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/game-over.mp3', (buffer) => {
+        gameOverSound.setBuffer(buffer);
+        gameOverSound.setLoop(false);
+        gameOverSound.setVolume(0.3);
+        gameOverSound.play();
+      });
+    }
+  }
+
+  playMainMenuSound() {
+    if (this.noSoundIcon.style.display === "none") {
+      const audioLoader = new THREE.AudioLoader();
+      audioLoader.load((import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/main-menu-creepy.mp3', (buffer) => {
+        this.ambientSound.setBuffer(buffer);
+        this.ambientSound.setLoop(true);
+        this.ambientSound.setVolume(0.5);
+        this.ambientSound.play();
       });
     }
   }

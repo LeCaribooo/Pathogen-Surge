@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Text } from "troika-three-text";
 
+import { SoundManager } from "./sound-manager.js";
 import { BaseScene } from "./base-scene.js";
 
 export class MenuScene extends BaseScene {
@@ -27,6 +28,8 @@ export class MenuScene extends BaseScene {
     this.camera.position.set(0, 1.5, 1.5);
     this.camera.lookAt(0, 1, 0);
 
+    this.soundManager = new SoundManager(this.camera, () => true);
+
     // Lighting
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(0, 1, 0);
@@ -37,6 +40,7 @@ export class MenuScene extends BaseScene {
     this.setupBodyParts();
     this.setupText();
     this.setupEventListeners();
+    this.soundManager.playMainMenuSound();
   }
 
   async setupModels() {
@@ -195,7 +199,7 @@ export class MenuScene extends BaseScene {
     // Remove event listeners
     window.removeEventListener("mousemove", this.onMouseMove, true);
     window.removeEventListener("click", this.launchGame, true);
-
+    this.soundManager.handlePause();
     return super.cleanup();
   }
 }

@@ -486,6 +486,8 @@ export class GameScene extends BaseScene {
     document.removeEventListener("keydown", this.onKeyDown.bind(this));
     // clear
     clearInterval(this.intervalId);
+    print("Clean game scene");
+    this.soundManager.handlePause();
     return super.cleanup();
   }
 }
