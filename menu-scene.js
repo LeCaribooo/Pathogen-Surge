@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Text } from "troika-three-text";
+import { ARButton } from "three/examples/jsm/Addons.js";
 
 import { SoundManager } from "./sound-manager.js";
 import { BaseScene } from "./base-scene.js";
@@ -49,11 +50,13 @@ export class MenuScene extends BaseScene {
     // Load models
     this.angiologyModel = await this.loadModel(
       loader,
-      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/models/angiology.glb'
+      (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
+        "assets/models/angiology.glb"
     );
     this.arthrologyModel = await this.loadModel(
       loader,
-      (import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/models/arthrology.glb'
+      (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
+        "assets/models/arthrology.glb"
     );
 
     this.scene.add(this.angiologyModel);
@@ -161,12 +164,12 @@ export class MenuScene extends BaseScene {
 
   setupText() {
     const text = new Text();
-    this.scene.add(text);
     text.text = "Choose wich body part to contaminate";
     text.color = 0xffffff;
     text.fontSize = 0.2;
     text.position.set(0.5, 2, 0);
     text.maxWidth = 1;
+    this.scene.add(text);
     text.sync();
     this.text = text;
   }

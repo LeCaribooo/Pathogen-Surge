@@ -58,12 +58,17 @@ export class SoundManager {
         this.playingSounds.length - 1
       );
       const audioLoader = new THREE.AudioLoader();
-      audioLoader.load(this.playingSounds[this.currentSoundIndex], (buffer) => {
-        this.ambientSound.setBuffer(buffer);
-        this.ambientSound.setLoop(false);
-        this.ambientSound.setVolume(0.1);
-        this.ambientSound.play();
-      });
+
+      audioLoader.load(
+        (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
+          this.sounds[this.currentSoundIndex],
+        (buffer) => {
+          this.ambientSound.setBuffer(buffer);
+          this.ambientSound.setLoop(false);
+          this.ambientSound.setVolume(0.1);
+          this.ambientSound.play();
+        }
+      );
     }
   }
 
@@ -88,12 +93,16 @@ export class SoundManager {
       const destroySound = new THREE.Audio(this.listener);
       const audioLoader = new THREE.AudioLoader();
 
-      audioLoader.load((import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/sounds/pop.mp3', (buffer) => {
-        destroySound.setBuffer(buffer);
-        destroySound.setLoop(false);
-        destroySound.setVolume(0.5);
-        destroySound.play();
-      });
+      audioLoader.load(
+        (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
+          "assets/sounds/pop.mp3",
+        (buffer) => {
+          destroySound.setBuffer(buffer);
+          destroySound.setLoop(false);
+          destroySound.setVolume(0.5);
+          destroySound.play();
+        }
+      );
     }
   }
 

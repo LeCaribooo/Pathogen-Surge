@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ARButton } from "three/addons/webxr/ARButton.js";
 
 export class SceneManager {
   constructor() {
@@ -12,8 +13,9 @@ export class SceneManager {
   initRenderer() {
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.xr.enabled = true;
     document.body.appendChild(this.renderer.domElement);
-
+    document.body.appendChild(ARButton.createButton(this.renderer));
     // Handle window resizing
     window.addEventListener("resize", () => {
       if (this.activeCamera) {
@@ -51,11 +53,12 @@ export class SceneManager {
   }
 
   // Main animation loop
-  animate = () => {
+  animate() {
     if (!this.currentScene) return;
 
-    requestAnimationFrame(this.animate);
-    this.currentScene.update();
-    this.renderer.render(this.currentScene.scene, this.activeCamera);
-  };
+    this.renderer.setAnimationLoop(() => {
+      this.currentScene.update();
+      this.renderer.render(this.currentScene.scene, this.activeCamera);
+    });
+  }
 }
