@@ -113,7 +113,7 @@ export class GameArScene extends BaseScene {
     // Start ambient sound
     this.soundManager.playAmbientSound();
 
-    const pauseButton = this.createButton3D("Pause", new THREE.Vector3(0, 0, -5), this.pauseGame.bind(this));
+    const pauseButton = this.createButton3D("Pause", new THREE.Vector3(0, 0.1, -3), this.pauseGame.bind(this));
     this.scene.add(pauseButton);
   }
 
@@ -183,7 +183,7 @@ export class GameArScene extends BaseScene {
   createButton3D(text, position, onClick) {
     // Créer la géométrie et le matériau du bouton
     const geometry = new THREE.PlaneGeometry(0.3, 0.15); // Taille du bouton
-    const material = new THREE.MeshBasicMaterial({ color: 0x007bff, side: THREE.DoubleSide });
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
     const button = new THREE.Mesh(geometry, material);
   
     // Positionner le bouton
@@ -193,7 +193,7 @@ export class GameArScene extends BaseScene {
     const textMesh = new Text();
     textMesh.text = text;
     textMesh.fontSize = 0.05; // Taille du texte
-    textMesh.color = 0xffffff; // Couleur du texte
+    textMesh.color = 0x00000; // Couleur du texte
     textMesh.position.set(-0.1, -0.02, 0.01); // Positionner le texte au centre du bouton
     textMesh.sync();
   
