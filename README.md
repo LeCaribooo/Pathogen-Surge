@@ -23,6 +23,7 @@ Yoan BIGGIO:
 - Blood cell animations (rotation + particle effect)
 - Game Over Scene
 - Pause System
+- AR system (pause, and game over that does not work)
 
 Pierre-Alexis VALBRUN:
 
@@ -31,6 +32,7 @@ Pierre-Alexis VALBRUN:
 - Menu scene
 - End scene
 - Deployment
+- AR system (Menu, game, end scenes)
 
 ## Sources
 
