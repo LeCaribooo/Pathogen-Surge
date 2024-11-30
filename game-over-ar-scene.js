@@ -133,7 +133,7 @@ export class GameOverArScene extends BaseScene {
     text.text = "Game Over";
     text.color = 0xff4444;
     text.fontSize = 0.3;
-    text.position.set(0, 0, -2);
+    text.position.set(-0.5, 0, -2);
     // text.maxWidth = 1;
     text.sync();
     this.text = text;
