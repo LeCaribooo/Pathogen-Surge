@@ -99,14 +99,7 @@ export class GameArScene extends BaseScene {
     const light2 = new THREE.PointLight(0xffffff, 140);
     light2.position.set(0, 0, 15);
     light2.lookAt(0, 0, 0);
-    this.scene.add(light2);
-
-    const pauseButton = this.createButton3D("Pause", new THREE.Vector3(0, 1, -1), () => {
-      console.log("Pause Game");
-      pauseGame(); // Fonction personnalisée
-    });
-    this.scene.add(pauseButton);
-    
+    this.scene.add(light2);    
 
     // Load models
     await Promise.all([this.loadPlayer(), this.loadVessel()]);
@@ -119,6 +112,12 @@ export class GameArScene extends BaseScene {
 
     // Start ambient sound
     this.soundManager.playAmbientSound();
+
+    const pauseButton = this.createButton3D("Pause", new THREE.Vector3(0, 1, -1), () => {
+      console.log("Pause Game");
+      pauseGame(); // Fonction personnalisée
+    });
+    this.scene.add(pauseButton);
   }
 
   async loadPlayer() {
