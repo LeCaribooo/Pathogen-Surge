@@ -101,7 +101,7 @@ export class GameArScene extends BaseScene {
     light2.lookAt(0, 0, 0);
     this.scene.add(light2);
 
-    const pauseButton = createButton3D("Pause", new THREE.Vector3(0, 1, -1), () => {
+    const pauseButton = this.createButton3D("Pause", new THREE.Vector3(0, 1, -1), () => {
       console.log("Pause Game");
       pauseGame(); // Fonction personnalisée
     });
@@ -280,7 +280,7 @@ export class GameArScene extends BaseScene {
   resumeGame() {
     this.isPaused = false;
     //document.getElementById("pauseMenu").style.display = "none";
-    
+
     if (this.pauseButtonGroup) {
       this.scene.remove(this.pauseButtonGroup);
       this.pauseButtonGroup = null;
