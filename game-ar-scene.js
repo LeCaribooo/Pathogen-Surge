@@ -427,7 +427,7 @@ export class GameArScene extends BaseScene {
             // Game over logic here
             this.isPaused = true;
             this.soundManager.handlePause();
-            this.sceneManager.switchScene("game-over", this.bodyPart);
+            this.sceneManager.switchScene("game-overAr", this.bodyPart);
           }
         }
       });
