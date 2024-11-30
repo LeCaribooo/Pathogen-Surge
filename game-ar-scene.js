@@ -234,7 +234,7 @@ export class GameArScene extends BaseScene {
     });
 
     // Setup pause menu buttons
-    window.addEventListener("click", onSelect);
+    window.addEventListener("click", this.onSelect.bind(this));
     // document
     //   .getElementById("resumeButton")
     //   .addEventListener("click", () => this.resumeGame());
