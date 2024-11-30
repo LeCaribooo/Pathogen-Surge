@@ -44,6 +44,7 @@ export class GameOverArScene extends BaseScene {
     this.updateButtonsPosition();
     return super.update();
   }
+  
 
   setupButtons() {
     // Créer un conteneur pour les boutons
@@ -51,6 +52,7 @@ export class GameOverArScene extends BaseScene {
     this.buttonContainer.style.position = 'absolute';
     this.buttonContainer.style.display = 'flex';
     this.buttonContainer.style.flexDirection = 'column';
+    this.buttonContainer.style.zIndex = '9999';
     this.buttonContainer.style.alignItems = 'center';
     this.buttonContainer.style.gap = '10px';
     this.buttonContainer.style.pointerEvents = 'auto'; // Pour permettre les clics
