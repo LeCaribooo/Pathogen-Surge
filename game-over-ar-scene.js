@@ -1,93 +1,120 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { Text } from "troika-three-text";
 
-import { SoundManager } from "./sound-manager.js";
 import { BaseScene } from "./base-scene.js";
 
-export class GameOverScene extends BaseScene {
-    constructor(sceneManager, bodyPart) {
-        super(sceneManager);
-        this.bodyPart = bodyPart;
-    }
+export class GameOverArScene extends BaseScene {
+  constructor(sceneManager, bodyPart) {
+    super(sceneManager);
+    this.bodyPart = bodyPart;
+    this.text = null;
+  }
 
-  // Initialize the scene with "Game Over" text and buttons
   async init() {
     // Camera setup
-    this.camera = new THREE.OrthographicCamera(
-        window.innerWidth / -2,
-        window.innerWidth / 2,
-        window.innerHeight / 2,
-        window.innerHeight / -2,
-        0.1,
-        10
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
     );
-    this.camera.position.z = 1;
+    this.camera.position.set(0, 1.5, 2);
+    this.camera.lookAt(0, 1, 0);
 
-    this.soundManager = new SoundManager(this.camera, () => true);
+    // Lighting
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(0, 2, 0);
+    this.scene.add(directionalLight);
 
-    // Set up overlay div for UI elements
-    this.createGameOverUI();
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    this.scene.add(ambientLight);
 
-    // Load the background texture
-    const textureLoader = new THREE.TextureLoader();
-    const backgroundTexture = textureLoader.load((import.meta.env.DEV ? 'Pathogen-Surge/' : '') + 'assets/picture/game-over-picture.png');
-
-    // Create a large plane with the background texture
-    const geometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
-    const material = new THREE.MeshBasicMaterial({ map: backgroundTexture });
-    const background = new THREE.Mesh(geometry, material);
-    background.position.z = -1; // Place it behind other elements
-    this.scene.add(background);
-    this.soundManager.playGameOverSound();
+    // Initialize your existing menu setup here
+    await this.setupButtons();
+    this.setupText();
+    // this.setupEventListeners();
   }
 
-  // Creates the Game Over UI overlay
-  createGameOverUI() {
-    const overlay = document.createElement("div");
-    overlay.id = "gameOverOverlay";
-    overlay.style.position = "fixed";
-    overlay.style.top = "0";
-    overlay.style.left = "0";
-    overlay.style.width = "100vw";
-    overlay.style.height = "100vh";
-    overlay.style.display = "flex";
-    overlay.style.flexDirection = "column";
-    overlay.style.justifyContent = "center";
-    overlay.style.alignItems = "center";
-    overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-    overlay.style.color = "white";
-    overlay.style.zIndex = "1000";
-
-    // Game Over text
-    const title = document.createElement("h1");
-    title.innerText = "Game Over";
-    title.style.color = "#ff4444";
-    overlay.appendChild(title);
-
-    // Restart button
-    const restartButton = document.createElement("button");
-    restartButton.innerText = "Restart";
-    restartButton.style.margin = "10px";
-    restartButton.onclick = () => this.sceneManager.switchScene("game", this.bodyPart);
-    overlay.appendChild(restartButton);
-
-    // Main Menu button
-    const mainMenuButton = document.createElement("button");
-    mainMenuButton.innerText = "Main Menu";
-    mainMenuButton.style.margin = "10px";
-    mainMenuButton.onclick = () => this.sceneManager.switchScene("menu");
-    overlay.appendChild(mainMenuButton);
-
-    document.body.appendChild(overlay);
+  update() {
+    // Rotate the model
+    // if (this.model) {
+    //   this.model.rotation.y += 0.005;
+    // }
+    this.updateButtonsPosition();
+    return super.update();
   }
 
-  // Clean up the scene and UI elements when switching scenes
+  setupButtons() {
+    // Créer un conteneur pour les boutons
+    this.buttonContainer = document.createElement('div');
+    this.buttonContainer.style.position = 'absolute';
+    this.buttonContainer.style.display = 'flex';
+    this.buttonContainer.style.flexDirection = 'column';
+    this.buttonContainer.style.alignItems = 'center';
+    this.buttonContainer.style.gap = '10px';
+    this.buttonContainer.style.pointerEvents = 'auto'; // Pour permettre les clics
+
+    // Bouton Restart
+    const restartButton = document.createElement('button');
+    restartButton.innerText = 'Restart';
+    restartButton.style.padding = '10px 20px';
+    restartButton.style.fontSize = '16px';
+    restartButton.style.cursor = 'pointer';
+    restartButton.onclick = () => {
+      this.sceneManager.switchScene("game", this.bodyPart);
+    };
+
+    // Bouton Menu
+    const menuButton = document.createElement('button');
+    menuButton.innerText = 'Menu';
+    menuButton.style.padding = '10px 20px';
+    menuButton.style.fontSize = '16px';
+    menuButton.style.cursor = 'pointer';
+    menuButton.onclick = () => {
+      this.sceneManager.switchScene("menu");
+    };
+
+    // Ajouter les boutons au conteneur
+    this.buttonContainer.appendChild(restartButton);
+    this.buttonContainer.appendChild(menuButton);
+
+    // Ajouter le conteneur au document
+    document.body.appendChild(this.buttonContainer);
+  }
+
+  updateButtonsPosition() {
+    if (!this.camera || !this.buttonContainer) return;
+  
+    // Position du texte/boutons en face de la caméra
+    const vector = new THREE.Vector3(0, 1, -2); // Position relative à la caméra
+    vector.applyMatrix4(this.camera.matrixWorld); // Transformation en coordonnées mondiales
+  
+    // Projet sur l'écran
+    vector.project(this.camera);
+  
+    const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+  
+    // Mise à jour de la position des boutons
+    this.buttonContainer.style.left = `${x}px`;
+    this.buttonContainer.style.top = `${y}px`;
+  }
+
+  setupText() {
+    const text = new Text();
+    this.scene.add(text);
+    text.text = "Game Over";
+    text.color = 0xff4444;
+    text.fontSize = 0.1;
+    text.position.set(0.25, 0, -1.5);
+    text.maxWidth = 1;
+    text.sync();
+    this.text = text;
+  }
+
   async cleanup() {
-    const overlay = document.getElementById("gameOverOverlay");
-    if (overlay) {
-      overlay.remove();
-    }
+    document.body.removeChild(this.buttonContainer);
+    return super.cleanup();
   }
-
-  // Update function (empty here since it's a static screen)
-  update() {}
 }
