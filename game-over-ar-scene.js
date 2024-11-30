@@ -33,6 +33,7 @@ export class GameOverArScene extends BaseScene {
     // Initialize your existing menu setup here
     await this.setupButtons();
     this.setupText();
+    window.addEventListener("click", this.onSelect.bind(this));
     // this.setupEventListeners();
   }
 
@@ -41,7 +42,7 @@ export class GameOverArScene extends BaseScene {
     // if (this.model) {
     //   this.model.rotation.y += 0.005;
     // }
-    this.updateButtonsPosition();
+    // this.updateButtonsPosition();
     return super.update();
   }
 

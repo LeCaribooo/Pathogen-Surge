@@ -113,8 +113,8 @@ export class GameArScene extends BaseScene {
     // Start ambient sound
     this.soundManager.playAmbientSound();
 
-    const pauseButton = this.createButton3D("Pause", new THREE.Vector3(0, 0.1, -3), this.pauseGame.bind(this));
-    this.scene.add(pauseButton);
+    // const pauseButton = this.createButton3D("Pause", new THREE.Vector3(0, 0.1, -3), this.pauseGame.bind(this));
+    // this.scene.add(pauseButton);
   }
 
   async loadPlayer() {
