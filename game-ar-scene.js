@@ -184,6 +184,11 @@ export class GameArScene extends BaseScene {
       }
     });
 
+    // Pause menu
+    document.getElementById("pauseButton").addEventListener("touchstart", (event) => {
+      this.pauseGame();
+    });
+
     // Setup pause menu buttons
     document
       .getElementById("resumeButton")
