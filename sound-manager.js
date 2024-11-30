@@ -61,7 +61,7 @@ export class SoundManager {
 
       audioLoader.load(
         (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
-          this.sounds[this.currentSoundIndex],
+        this.playingSounds[this.currentSoundIndex],
         (buffer) => {
           this.ambientSound.setBuffer(buffer);
           this.ambientSound.setLoop(false);
@@ -95,7 +95,7 @@ export class SoundManager {
 
       audioLoader.load(
         (import.meta.env.DEV ? "Pathogen-Surge/" : "") +
-          "assets/sounds/pop.mp3",
+        "assets/sounds/pop.mp3",
         (buffer) => {
           destroySound.setBuffer(buffer);
           destroySound.setLoop(false);
@@ -144,8 +144,8 @@ export class SoundManager {
 
   cleanup() {
     clearInterval(this.intervalSoundId);
-    this.soundIcon.removeEventListener("click", () => {});
-    this.noSoundIcon.removeEventListener("click", () => {});
+    this.soundIcon.removeEventListener("click", () => { });
+    this.noSoundIcon.removeEventListener("click", () => { });
     this.camera.remove(this.listener);
   }
 }
