@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { GUI } from "dat.gui";
 import { Text } from "troika-three-text";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -26,12 +25,6 @@ export class MenuArScene extends BaseScene {
     );
     this.camera.position.set(0, 0.4, 0);
     this.camera.lookAt(0, 0, -1.4);
-
-    const gui = new GUI();
-    const cameraFolder = gui.addFolder("Camera");
-    cameraFolder.add(this.camera.position, "y", 0, 10);
-    cameraFolder.add(this.camera.position, "z", -10, 10);
-    cameraFolder.open();
 
     // Lighting
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
