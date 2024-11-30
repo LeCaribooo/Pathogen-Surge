@@ -31,7 +31,7 @@ export class GameOverArScene extends BaseScene {
     this.scene.add(ambientLight);
 
     // Initialize your existing menu setup here
-    await this.setupButtons();
+    this.setupButtons();
     this.setupText();
     window.addEventListener("click", this.onSelect.bind(this));
     // this.setupEventListeners();
