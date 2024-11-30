@@ -26,7 +26,7 @@ export class GameArScene extends BaseScene {
       Legs: {
         speed: 0.3,
         playerSpeed: 0.2,
-        lives: 2,
+        lives: 1,
         distance: 700,
       },
       Chest: {
@@ -223,7 +223,7 @@ export class GameArScene extends BaseScene {
     this.isPaused = false;
     this.soundManager.handlePause();
     document.getElementById("pauseMenu").style.display = "none";
-    this.sceneManager.switchScene("menu");
+    this.sceneManager.switchScene("menuAr");
   }
 
   updatePlayerMovement() {
