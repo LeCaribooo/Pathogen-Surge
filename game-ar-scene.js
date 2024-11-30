@@ -15,6 +15,9 @@ export class GameArScene extends BaseScene {
     this.bloodCells = [];
     this.livesText = null;
 
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+
     // Game state
     this.info = {
       Head: {
@@ -98,6 +101,13 @@ export class GameArScene extends BaseScene {
     light2.lookAt(0, 0, 0);
     this.scene.add(light2);
 
+    const pauseButton = createButton3D("Pause", new THREE.Vector3(0, 1, -1), () => {
+      console.log("Pause Game");
+      pauseGame(); // Fonction personnalisée
+    });
+    this.scene.add(pauseButton);
+    
+
     // Load models
     await Promise.all([this.loadPlayer(), this.loadVessel()]);
 
@@ -174,6 +184,49 @@ export class GameArScene extends BaseScene {
     });
   }
 
+  createButton3D(text, position, onClick) {
+    // Créer la géométrie et le matériau du bouton
+    const geometry = new THREE.PlaneGeometry(0.3, 0.15); // Taille du bouton
+    const material = new THREE.MeshBasicMaterial({ color: 0x007bff, side: THREE.DoubleSide });
+    const button = new THREE.Mesh(geometry, material);
+  
+    // Positionner le bouton
+    button.position.set(position.x, position.y, position.z);
+  
+    // Ajouter le texte au bouton
+    const textMesh = new Text();
+    textMesh.text = text;
+    textMesh.fontSize = 0.05; // Taille du texte
+    textMesh.color = 0xffffff; // Couleur du texte
+    textMesh.position.set(-0.1, -0.02, 0.01); // Positionner le texte au centre du bouton
+    textMesh.sync();
+  
+    // Ajouter le texte comme enfant du bouton
+    button.add(textMesh);
+  
+    // Ajouter l'action onClick au bouton
+    button.userData.onClick = onClick;
+  
+    return button;
+  }
+
+  onSelect(event) {
+    // Convertir les coordonnées de la souris en coordonnées normalisées
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  
+    // Mettre à jour le raycaster
+    raycaster.setFromCamera(mouse, camera);
+  
+    // Vérifier les intersections avec les objets de la scène
+    const intersects = raycaster.intersectObjects(scene.children);
+    for (let intersect of intersects) {
+      if (intersect.object.userData.onClick) {
+        intersect.object.userData.onClick(); // Exécuter l'action associée
+      }
+    }
+  }
+
   setupEventListeners() {
     // Visibility change
     document.addEventListener("visibilitychange", () => {
@@ -184,32 +237,57 @@ export class GameArScene extends BaseScene {
       }
     });
 
-    // Pause menu
-    document.getElementById("pauseButton").addEventListener("touchstart", (event) => {
-      this.pauseGame();
-    });
-
     // Setup pause menu buttons
-    document
-      .getElementById("resumeButton")
-      .addEventListener("click", () => this.resumeGame());
-    document
-      .getElementById("restartButton")
-      .addEventListener("click", () => this.restartGame());
-    document
-      .getElementById("exitButton")
-      .addEventListener("click", () => this.exitGame());
+    window.addEventListener("click", onSelect);
+    // document
+    //   .getElementById("resumeButton")
+    //   .addEventListener("click", () => this.resumeGame());
+    // document
+    //   .getElementById("restartButton")
+    //   .addEventListener("click", () => this.restartGame());
+    // document
+    //   .getElementById("exitButton")
+    //   .addEventListener("click", () => this.exitGame());
   }
 
   pauseGame() {
     this.isPaused = true;
-    document.getElementById("pauseMenu").style.display = "flex";
+    //document.getElementById("pauseMenu").style.display = "flex";
+
+    const buttonGroup = new THREE.Group();
+
+    // Création des boutons avec leurs positions et actions associées
+    const resumeButton = this.createButton3D("Resume", new THREE.Vector3(0, 1, -1), this.resumeGame.bind(this));
+    const restartButton = this.createButton3D("Restart", new THREE.Vector3(0, 0.8, -1), this.restartGame.bind(this));
+    const exitButton = this.createButton3D("Exit", new THREE.Vector3(0, 0.6, -1), this.exitGame.bind(this));
+
+    // Ajouter les boutons au groupe
+    buttonGroup.add(resumeButton);
+    buttonGroup.add(restartButton);
+    buttonGroup.add(exitButton);
+
+    // Ajouter le groupe à la scène
+    this.scene.add(buttonGroup);
+
+    // Sauvegarder le groupe pour le supprimer après
+    this.pauseButtonGroup = buttonGroup;
+
+    console.log("Game Paused");
+
     this.soundManager.handlePause();
   }
 
   resumeGame() {
     this.isPaused = false;
-    document.getElementById("pauseMenu").style.display = "none";
+    //document.getElementById("pauseMenu").style.display = "none";
+    
+    if (this.pauseButtonGroup) {
+      this.scene.remove(this.pauseButtonGroup);
+      this.pauseButtonGroup = null;
+    }
+  
+    console.log("Game Resumed");
+
     this.soundManager.handleResume();
   }
 
@@ -222,7 +300,7 @@ export class GameArScene extends BaseScene {
   exitGame() {
     this.isPaused = false;
     this.soundManager.handlePause();
-    document.getElementById("pauseMenu").style.display = "none";
+    //document.getElementById("pauseMenu").style.display = "none";
     this.sceneManager.switchScene("menuAr");
   }
 
